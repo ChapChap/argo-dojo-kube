@@ -1,0 +1,71 @@
+# Default values for guestbook.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+guestbook-blue:
+  ingress:
+    enabled: true
+  # replicaCount: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 30
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  image:
+    repository: achapusot/guestbook
+    tag: 1.0.0
+
+  serviceAccount:
+    create: true
+
+  podSecurityContext:
+    fsGroup: 2000
+
+  securityContext:
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1000
+
+  service:
+    port: 3000
+
+  resources:
+    limits:
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  livenessProbe:
+    httpGet:
+      path: /healthz
+      port: http
+  readinessProbe:
+    httpGet:
+      path: /healthz
+      port: http
+
+  affinity: {}
+
+  metrics:
+    serviceMonitor:
+      enabled: true
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      labels: {}
+
+database:
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: false
+  image:
+    repository: redis
+    tag: 8.2.1
