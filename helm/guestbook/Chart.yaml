@@ -8,7 +8,7 @@ dependencies:
   - name: guestbook
     version: 1.0.0
     repository: "file://charts/guestbook"
-    alias: guestbook-blue
+    alias: app
   - name: redis
     version: 22.0.7
     repository: "oci://registry-1.docker.io/bitnamicharts"

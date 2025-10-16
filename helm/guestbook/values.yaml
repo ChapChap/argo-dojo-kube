@@ -1,7 +1,7 @@
 # Default values for guestbook.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-guestbook-blue:
+app:
   ingress:
     enabled: true
   # replicaCount: 2
@@ -54,10 +54,6 @@ guestbook-blue:
   metrics:
     serviceMonitor:
       enabled: true
-      path: /metrics
-      interval: 30s
-      scrapeTimeout: 10s
-      labels: {}
 
 database:
   architecture: standalone

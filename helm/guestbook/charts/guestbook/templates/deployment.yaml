@@ -48,6 +48,22 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+        # Redis Exporter Sidecar
+        - name: redis-exporter
+          image: oliver006/redis_exporter:latest
+          ports:
+            - name: metrics
+              containerPort: 9121
+              protocol: TCP
+          env:
+            - name: REDIS_ADDR
+              value: "{{ .Release.Name }}-database-master:6379"
+          resources:
+            limits:
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 128Mi
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: kubernetes.io/hostname

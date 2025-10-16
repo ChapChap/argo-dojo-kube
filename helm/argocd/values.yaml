@@ -1,0 +1,10 @@
+argo-cd:
+  global:
+    domain: argocd.fbi.com
+  server:
+    ingress:
+      ingressClassName: nginx
+      annotations:
+        nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+      enabled: true
+      tls: false

@@ -10,5 +10,11 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+  {{- if .Values.metrics.serviceMonitor.enabled }}
+    - port: 9121
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+  {{- end }}
   selector:
     {{- include "guestbook.selectorLabels" . | nindent 4 }}
