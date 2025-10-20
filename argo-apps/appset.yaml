@@ -10,14 +10,11 @@ spec:
     - git:
         repoURL: https://github.com/ChapChap/argo-dojo-kube.git
         revision: main
-        files:
-          - path: "helm/*/Chart.yaml"
-            exclude: "helm/*/charts/**"
-        values:
-          application: "{{ index .path.segments 1 }}"
+        directories:
+          - path: "helm/*"
   template:
     metadata:
-      name: "{{ .values.application }}"
+      name: "{{ .path.basename }}"
     spec:
       project: default
       source:
@@ -25,12 +22,12 @@ spec:
         targetRevision: main
         path: "{{ .path.path }}"
         helm:
-          releaseName: "{{ .values.application }}"
+          releaseName: "{{ .path.basename }}"
           valueFiles:
             - values.yaml
       destination:
         name: in-cluster
-        namespace: "{{ .values.application }}"
+        namespace: "{{ .path.basename }}"
       syncPolicy:
         automated:
           prune: true
