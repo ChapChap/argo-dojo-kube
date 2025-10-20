@@ -12,6 +12,7 @@ spec:
         revision: main
         files:
           - path: "helm/*/Chart.yaml"
+            exclude: "helm/*/charts/**"
         values:
           application: "{{ index .path.segments 1 }}"
   template:
