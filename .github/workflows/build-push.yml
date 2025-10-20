@@ -7,7 +7,7 @@ jobs:
   docker:
     runs-on: gha-runner
     env:
-      DOCKER_HOST: tcp://localhost:2376
+      DOCKER_HOST: tcp://localhost:2375
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,7 +22,7 @@ jobs:
           driver-opts: |
             network=host
             image=moby/buildkit:latest
-          endpoint: tcp://localhost:2376
+          endpoint: tcp://localhost:2375
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
