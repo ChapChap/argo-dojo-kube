@@ -1,0 +1,9 @@
+apiVersion: v2
+name: renovate
+description: A Helm chart for deployment renovate on Kubernetes
+type: application
+version: 11.4.0
+dependencies:
+  - name: mend-renovate-ce-ee
+    version: 11.4.0
+    repository: https://charts.mend-renovate-ce-ee.org
