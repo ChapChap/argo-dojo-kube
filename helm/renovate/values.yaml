@@ -1,0 +1,21 @@
+# Default values: https://github.com/renovatebot/helm-charts/blob/renovate-37.77.1/charts/renovate/values.yaml
+
+renovate:
+  existingSecret: renovate-token
+
+  renovate:
+    # Configuration Renovate (JSON string)
+    config: |
+      {
+        "platform": "github",
+        "repositories": ["ChapChap/argo-dojo-kube"],
+        "autodiscover": false,
+        "requireConfig": "optional",
+        "onboarding": false,
+        "logLevel": "info"
+      }
+
+    # Injecte les variables d'environnement depuis le Secret
+    envFrom:
+      - secretRef:
+          name: renovate-token
