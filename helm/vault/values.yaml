@@ -1,0 +1,13 @@
+vault:
+  server:
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      hosts:
+        - host: vault.fbi.com
+          paths:
+            - /
+      annotations:
+        nginx.ingress.kubernetes.io/rewrite-target: /
+        nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      pathType: Prefix
