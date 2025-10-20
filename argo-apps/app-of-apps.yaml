@@ -12,7 +12,7 @@ spec:
     name: in-cluster
   source:
     repoURL: https://github.com/ChapChap/argo-dojo-kube.git
-    path: /argo-apps
+    path: argo-apps
     directory:
       recurse: true
   syncPolicy:
