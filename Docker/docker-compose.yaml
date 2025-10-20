@@ -1,0 +1,18 @@
+services:
+  guestbook:
+    image: guestbook:dev
+    build:
+      context: .
+      target: development
+    volumes:
+        - ./public:/app/public
+    ports:
+      - 3000:3000
+    environment:
+      REDIS_HOST: redis
+  redis:
+    image: redis:7
+    volumes:
+      - redis_data:/data
+volumes:
+  redis_data:
