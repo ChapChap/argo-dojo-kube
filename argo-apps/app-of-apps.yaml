@@ -5,16 +5,14 @@ metadata:
   namespace: argocd
   annotations:
     argocd.argoproj.io/manifest-generate-paths: .
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   destination:
     namespace: argocd
     name: in-cluster
   source:
-    repoURL: https://gitlab.support.ohdp.outscale.net/outscale-cerba-thedodo/apps-argocd.git
-    path: ./argo-apps
+    repoURL: https://github.com/ChapChap/argo-dojo-kube.git
+    path: /argo-apps
     directory:
       recurse: true
   syncPolicy:
