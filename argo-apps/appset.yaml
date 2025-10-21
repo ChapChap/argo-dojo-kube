@@ -15,6 +15,17 @@ spec:
   template:
     metadata:
       name: "{{ .path.basename }}"
+      annotations:
+        argocd.argoproj.io/sync-wave: >-
+          {{- if eq .path.basename "argocd" }}1
+          {{- else if eq .path.basename "external-secret" }}2
+          {{- else if eq .path.basename "prometheus" }}3
+          {{- else if eq .path.basename "gha-runner" }}4
+          {{- else if eq .path.basename "renovate" }}5
+          {{- else if eq .path.basename "guestbook" }}6
+          {{- else if eq .path.basename "chaos-mesh" }}7
+          {{- else }}0
+          {{- end }}
     spec:
       project: default
       source:
