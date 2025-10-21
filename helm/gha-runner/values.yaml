@@ -24,6 +24,12 @@ gha-runner-scale-set:
           value: ""
         - name: DOCKER_TLS_VERIFY
           value: ""
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            memory: 256Mi
         volumeMounts:
         - name: work
           mountPath: /home/runner/_work
@@ -34,6 +40,12 @@ gha-runner-scale-set:
           value: ""
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            memory: 256Mi
         volumeMounts:
         - name: work
           mountPath: /home/runner/_work

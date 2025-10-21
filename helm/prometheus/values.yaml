@@ -10,6 +10,12 @@ kube-prometheus-stack:
         nginx.ingress.kubernetes.io/ssl-redirect: "false"
       path: /
       pathType: Prefix
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        memory: 256Mi
 
   prometheus:
     ingress:
@@ -29,3 +35,42 @@ kube-prometheus-stack:
         matchLabels: {}
       serviceMonitorSelector:
         matchLabels: {}
+      resources:
+        requests:
+          cpu: 200m
+          memory: 512Mi
+        limits:
+          memory: 512Mi
+
+  alertmanager:
+    alertmanagerSpec:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          memory: 64Mi
+
+  prometheusOperator:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        memory: 128Mi
+
+  kube-state-metrics:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        memory: 64Mi
+
+  prometheus-node-exporter:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        memory: 64Mi
