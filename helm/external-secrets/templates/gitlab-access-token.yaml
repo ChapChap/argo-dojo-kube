@@ -1,18 +1,18 @@
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
-  name: renovate-token
+  name: gitlab-access-token
 spec:
   refreshInterval: 1h
   secretStoreRef:
     kind: ClusterSecretStore
     name: gitlab-cluster-store
   target:
-    name: renovate-token
+    name: gitlab-access-token
   data:
-    - secretKey: RENOVATE_TOKEN
+    - secretKey: token
       remoteRef:
-        key: GITHUB_TOKEN
+        key: GITLAB_TOKEN
         conversionStrategy: Default
         decodingStrategy: None
         metadataPolicy: None
