@@ -51,6 +51,10 @@ app:
 
   affinity: {}
 
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
   metrics:
     serviceMonitor:
       enabled: true
@@ -68,6 +72,9 @@ database:
         memory: 64Mi
       limits:
         memory: 64Mi
+  pdb:
+    create: true
+    minAvailable: 1
   image:
     repository: redis
     tag: 8.2.1
