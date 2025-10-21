@@ -4,6 +4,9 @@ argo-cd:
       server.insecure: true
   global:
     domain: argocd.fbi.com
+    networkPolicy:
+      create: true
+      defaultDenyIngress: false
   server:
     ingress:
       ingressClassName: nginx

@@ -1,4 +1,7 @@
 external-secrets:
+  networkPolicy:
+    enabled: true
+
   resources:
     requests:
       cpu: 100m

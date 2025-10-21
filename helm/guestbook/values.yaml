@@ -55,6 +55,9 @@ app:
     enabled: true
     minAvailable: 1
 
+  networkPolicy:
+    enabled: true
+
   metrics:
     serviceMonitor:
       enabled: true
@@ -75,6 +78,12 @@ database:
   pdb:
     create: true
     minAvailable: 1
+  networkPolicy:
+    enabled: true
+    allowExternal: false
+    ingressNSMatchLabels:
+      name: guestbook
+    ingressNSPodMatchLabels: {}
   image:
     repository: redis
     tag: 8.2.1

@@ -1,8 +1,6 @@
 chaos-mesh:
   dashboard:
     securityMode: false
-    networkPolicy:
-      enabled: true
     resources:
       requests:
         cpu: 100m
@@ -11,8 +9,6 @@ chaos-mesh:
         memory: 128Mi
 
   controllerManager:
-    networkPolicy:
-      enabled: true
     resources:
       requests:
         cpu: 100m

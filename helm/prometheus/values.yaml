@@ -1,7 +1,5 @@
 kube-prometheus-stack:
   grafana:
-    networkPolicy:
-      enabled: true
     ingress:
       enabled: true
       ingressClassName: nginx
@@ -20,8 +18,6 @@ kube-prometheus-stack:
         memory: 256Mi
 
   prometheus:
-    networkPolicy:
-      enabled: true
     ingress:
       enabled: true
       ingressClassName: nginx
@@ -47,8 +43,6 @@ kube-prometheus-stack:
           memory: 512Mi
 
   alertmanager:
-    networkPolicy:
-      enabled: true
     alertmanagerSpec:
       resources:
         requests:
@@ -58,8 +52,6 @@ kube-prometheus-stack:
           memory: 64Mi
 
   prometheusOperator:
-    networkPolicy:
-      enabled: true
     resources:
       requests:
         cpu: 100m
