@@ -1,25 +1,35 @@
 apiVersion: argoproj.io/v1alpha1
-kind: Application
+kind: ApplicationSet
 metadata:
   name: customresourcedefinitions
   namespace: argocd
 spec:
-  project: default
-  source:
-    repoURL: https://github.com/ChapChap/argo-dojo-kube.git
-    targetRevision: main
-    path: CRDs
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: prometheus
-  syncPolicy:
-    automated:
-      prune: false
-      selfHeal: true
-    syncOptions:
-      - ApplyOutOfSyncOnly=true
-  ignoreDifferences:
-    - group: apiextensions.k8s.io
-      kind: CustomResourceDefinition
-      jsonPointers:
-        - /status
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://github.com/ChapChap/argo-dojo-kube.git
+        revision: main
+        directories:
+          - path: "CRDs/*"
+  template:
+    metadata:
+      name: "{{ .path.basename }}"
+      annotations:
+        argocd.argoproj.io/sync-wave: '0'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/ChapChap/argo-dojo-kube.git
+        targetRevision: main
+        path: "{{ .path.path }}"
+        kustomize: {}
+      destination:
+        name: in-cluster
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
