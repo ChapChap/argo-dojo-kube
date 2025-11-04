@@ -40,13 +40,11 @@ resources:
 
 livenessProbe:
   httpGet:
-    path: /
-    # path: /healthz
+    path: /healthz
     port: http
 readinessProbe:
   httpGet:
-    path: /
-    # path: /healthz
+    path: /healthz
     port: http
 
 affinity: {}
