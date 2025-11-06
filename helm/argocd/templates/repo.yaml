@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  labels:
+    argocd.argoproj.io/secret-type: repository
+  name: repo-github
+stringData:
+  name: Github
+  project: default
+  type: git
+  url: https://github.com/ChapChap/argo-dojo-kube.git
