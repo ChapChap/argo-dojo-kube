@@ -33,11 +33,11 @@ minikube addons enable ingress
 ```bash
 kubectl create namespace argocd
 cd helm/argocd
-helm install argocd .
+helm install argocd . -n argocd
 ```
 
 5. Deploy ArgoCD App of Apps
 
 ```bash
-kubectl apply -f argo-apps/appset.yaml
+kubectl apply -f argo-apps/app-of-apps.yaml
 ```
