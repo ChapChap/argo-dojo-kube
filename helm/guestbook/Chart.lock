@@ -1,9 +1,9 @@
 dependencies:
 - name: guestbook
   repository: file://charts/guestbook
-  version: 1.0.0
+  version: 1.0.1
 - name: redis
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 22.0.7
-digest: sha256:bad5063336a600aa16fba0576eacba8500a4d95f047a63909341ab67b3d61a8a
-generated: "2025-10-20T14:16:03.158206+02:00"
+digest: sha256:96a3e2a7f979f48b904205d60b839e715e15be860c4133cfe82faab1fb509081
+generated: "2025-11-06T14:51:00.364263+01:00"
