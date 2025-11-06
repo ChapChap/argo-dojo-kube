@@ -4,9 +4,9 @@ gha-runner-scale-set:
   githubConfigUrl: https://github.com/ChapChap/argo-dojo-kube
   githubConfigSecret: pre-defined-secret
 
-  # controllerServiceAccount:
-  #   name: gha-runner-gha-rs-controller # À variabiliser
-  #   namespace: gha-runner
+  controllerServiceAccount:
+    name: gha-runner-gha-rs-controller # À variabiliser
+    namespace: gha-runner
 
   maxRunners: 2
   minRunners: 1
