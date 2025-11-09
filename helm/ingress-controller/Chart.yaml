@@ -1,0 +1,9 @@
+apiVersion: v2
+name: ingress
+description: A standard deployment of the NGINX Ingress Controller.
+type: application
+version: 4.14.0
+dependencies:
+  - name: ingress-nginx
+    repository: https://kubernetes.github.io/ingress-nginx
+    version: 4.14.0
