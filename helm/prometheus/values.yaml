@@ -5,7 +5,7 @@ kube-prometheus-stack:
     networkPolicy:
       enabled: true
     ingress:
-      enabled: true
+      enabled: false
       ingressClassName: traefik
       hosts:
         - grafana.fbi.com
@@ -25,7 +25,7 @@ kube-prometheus-stack:
     networkPolicy:
       enabled: true
     ingress:
-      enabled: true
+      enabled: false
       ingressClassName: traefik
       hosts:
         - prometheus.fbi.com
