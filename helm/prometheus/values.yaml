@@ -6,7 +6,7 @@ kube-prometheus-stack:
       enabled: true
     ingress:
       enabled: true
-      ingressClassName: nginx
+      ingressClassName: traefik
       hosts:
         - grafana.fbi.com
       annotations:
@@ -26,7 +26,7 @@ kube-prometheus-stack:
       enabled: true
     ingress:
       enabled: true
-      ingressClassName: nginx
+      ingressClassName: traefik
       hosts:
         - prometheus.fbi.com
       annotations:
