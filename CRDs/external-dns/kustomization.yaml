@@ -1,0 +1,17 @@
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - https://raw.githubusercontent.com/kubernetes-sigs/external-dns/refs/tags/external-dns-helm-chart-1.19.0/config/crd/standard/dnsendpoints.externaldns.k8s.io.yaml
+
+patches:
+  - target:
+      kind: CustomResourceDefinition
+    patch: |-
+      - op: add
+        path: /metadata/annotations/argocd.argoproj.io~1sync-wave
+        value: "0"
+      - op: add
+        path: /metadata/annotations/argocd.argoproj.io~1sync-options
+        value: Replace=true,Prune=false
