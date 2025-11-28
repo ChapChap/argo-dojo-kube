@@ -3,7 +3,7 @@ argo-cd:
     params:
       server.insecure: true
   global:
-    domain: argocd.fbi.com
+    domain: argocd.homelab.lan
     networkPolicy:
       create: true
       defaultDenyIngress: false
