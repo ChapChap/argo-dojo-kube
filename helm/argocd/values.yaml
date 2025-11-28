@@ -10,9 +10,7 @@ argo-cd:
   server:
     ingress:
       ingressClassName: traefik
-      annotations:
-        nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-      enabled: false
+      enabled: true
       tls: false
     # resources:
     #   requests:
