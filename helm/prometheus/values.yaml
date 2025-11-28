@@ -5,13 +5,10 @@ kube-prometheus-stack:
     networkPolicy:
       enabled: true
     ingress:
-      enabled: false
+      enabled: true
       ingressClassName: traefik
       hosts:
-        - grafana.fbi.com
-      annotations:
-        nginx.ingress.kubernetes.io/rewrite-target: /
-        nginx.ingress.kubernetes.io/ssl-redirect: "false"
+        - grafana.homelab.lan
       path: /
       pathType: Prefix
     resources:
