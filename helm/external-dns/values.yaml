@@ -1,0 +1,6 @@
+external-dns:
+  provider:
+    name: pihole
+  extraArgs:
+    - --pihole-api-version=6
+    - --pihole-server=http://pihole
