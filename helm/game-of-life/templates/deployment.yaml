@@ -27,7 +27,7 @@ spec:
             drop:
             - ALL
           readOnlyRootFilesystem: true
-        image: "game-of-life:{{ .Chart.AppVersion }}"
+        image: "achapusot/game-of-life:{{ .Chart.AppVersion }}"
         imagePullPolicy: IfNotPresent
         ports:
         - name: http
