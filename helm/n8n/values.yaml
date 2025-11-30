@@ -1,5 +1,5 @@
 n8n:
-  existingSecret: n8n-cnpg-cluster-app
+  existingSecret: cnpg-cluster-app
   ingress:
     enabled: true
     hosts:
