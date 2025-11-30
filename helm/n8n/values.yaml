@@ -1,7 +1,2 @@
 my-n8n:
-  main:
-    config:
-      db:
-        type: postgresdb
-        postgresdb:
-          host: cnpg-cluster-rw.cnpg-cluster.svc.cluster.local
+  existingSecret: n8n-cnpg-cluster-app
