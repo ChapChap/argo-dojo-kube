@@ -1,2 +1,8 @@
 my-n8n:
   existingSecret: n8n-cnpg-cluster-app
+  ingress:
+    enabled: true
+    hosts:
+      - host: n8n.homelab.lan
+        paths:
+          - /
