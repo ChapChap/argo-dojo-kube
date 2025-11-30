@@ -1,5 +1,6 @@
 n8n:
-  existingSecret: cnpg-cluster-app
+  # Can't find the expected format for existingSecret
+  # existingSecret: cnpg-cluster-app
   ingress:
     enabled: true
     hosts:
