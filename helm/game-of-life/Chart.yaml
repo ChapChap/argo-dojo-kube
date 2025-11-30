@@ -1,0 +1,13 @@
+apiVersion: v2
+name: game-of-life
+description: A Helm chart for Conway's Game of Life web application
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - game-of-life
+  - conway
+  - web
+maintainers:
+  - name: Antoine Chapusot
+home: https://github.com/ChapChap/argo-dojo-kube

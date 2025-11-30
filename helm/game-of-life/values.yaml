@@ -1,0 +1,10 @@
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: game-of-life.homelab.lan
+      paths:
+        - path: /
+          pathType: Prefix
