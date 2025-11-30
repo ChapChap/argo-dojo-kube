@@ -7,3 +7,9 @@ n8n:
       - host: n8n.homelab.lan
         paths:
           - /
+  livenessProbe:
+    httpGet:
+      path: /
+  readinessProbe:
+    httpGet:
+      path: /
