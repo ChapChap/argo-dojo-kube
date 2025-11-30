@@ -1,0 +1,25 @@
+cluster:
+  cluster:
+    instances: 2
+    minSyncReplicas: 1
+    storage:
+      size: 50Gi
+
+  # backups:
+  #   enabled: true
+  #   endpointURL: "http://minio.minio.svc.cluster.local:9000"
+  #   provider: s3
+  #   s3:
+  #     region: "local-minio"
+  #     bucket: "cnpg-backups"
+  #     path: "/cerba-stream-patient-prod"
+  #     sse: "AES256"
+  #   secret:
+  #     create: false
+  #     name: "cnpg-minio-writer-aksk"
+
+  #   scheduledBackups:
+  #     - name: daily-snapshot
+  #       schedule: "0 0 2 * * *" # every day at 2am
+  #       backupOwnerReference: self
+  #       method: barmanObjectStore
