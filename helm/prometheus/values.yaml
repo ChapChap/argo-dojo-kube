@@ -31,6 +31,10 @@ kube-prometheus-stack:
       pathType: Prefix
 
     prometheusSpec:
+      # Let Prometheus use *exactly* what we set here
+      serviceMonitorSelectorNilUsesHelmValues: false
+      podMonitorSelectorNilUsesHelmValues: false
+
       serviceMonitorNamespaceSelector:
         matchLabels: {}
       serviceMonitorSelector:
