@@ -1,9 +1,9 @@
 apiVersion: v2
-name: my-n8n
+name: n8n
 description: A Helm chart for deployment n8n on Kubernetes
 type: application
 version: 0.23.0
 dependencies:
-  - name: my-n8n
+  - name: n8n
     version: 0.23.0
     repository: oci://8gears.container-registry.com/library/n8n
