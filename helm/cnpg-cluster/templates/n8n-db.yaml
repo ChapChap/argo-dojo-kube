@@ -1,0 +1,28 @@
+---
+apiVersion: external-secrets.io/v1alpha1
+kind: PushSecret
+metadata:
+  name: n8n-db-credentials
+spec:
+  deletionPolicy: Delete
+  refreshInterval: 24h
+  secretStoreRefs:
+    - name: gitlab-cluster-store
+      kind: SecretStore
+  selector:
+    secret:
+      name: cnpg-cluster-app
+  data:
+    - match:
+        remoteRef:
+          remoteKey: cnpg-cluster-app
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: n8n
+spec:
+  name: n8n
+  owner: app
+  cluster:
+    name: cnpg-cluster
