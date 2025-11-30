@@ -14,6 +14,9 @@ renovate:
         "onboarding": false,
         "logLevel": "info"
       }
+    env:
+      - name: NODE_OPTIONS
+        value: "--max-old-space-size=768"  # ~768 MiB heap
 
     # Injecte les variables d'environnement depuis le Secret
     envFrom:
@@ -25,4 +28,4 @@ renovate:
       cpu: 200m
       memory: 512Mi
     limits:
-      memory: 512Mi
+      memory: 1Gi
