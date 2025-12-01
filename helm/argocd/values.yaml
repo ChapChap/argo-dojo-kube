@@ -2,6 +2,25 @@ argo-cd:
   configs:
     params:
       server.insecure: true
+    cm:
+      # Configuration OIDC Google
+      url: http://argocd.homelab.lan
+      dex.config: |
+        connectors:
+          - type: oidc
+            id: google
+            name: Google
+            config:
+              issuer: https://accounts.google.com
+              clientID: $dex.google.clientId
+              clientSecret: $dex.google.clientSecret
+              redirectURI: http://argocd.homelab.lan/api/dex/callback
+    rbac:
+      # Policy RBAC - tous les utilisateurs authentifiés sont admins par défaut
+      # Vous pouvez personnaliser cela pour restreindre les permissions
+      policy.default: role:admin
+      policy.csv: |
+        g, authenticated, role:admin
   global:
     domain: argocd.homelab.lan
     networkPolicy:
