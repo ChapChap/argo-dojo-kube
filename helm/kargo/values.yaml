@@ -1,0 +1,150 @@
+# Configuration Kargo pour déploiement POC sur k3s
+kargo:
+  # Configuration de l'API server
+  api:
+    enabled: true
+    replicas: 1
+    host: kargo.homelab.lan
+    logLevel: INFO
+
+    # Ressources limitées pour POC
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi
+
+    # Compte admin pour POC (username: admin, password: admin)
+    # IMPORTANT: Changer le mot de passe en production !
+    adminAccount:
+      passwordHash: "$2y$10$Qic9R8xyVG11fy7Zlg0Eeu6u4BfdtOM1zA34VIrmZ.6Oc2zgcoF9."
+      tokenSigningKey: "kargo-poc-signing-key-change-in-production"
+
+    # TLS désactivé pour simplifier le POC (à activer en production)
+    tls:
+      enabled: false
+
+    # Ingress pour accès externe
+    ingress:
+      enabled: true
+      ingressClassName: traefik  # Adapter selon votre ingress controller
+      annotations: {}
+      # Pour utiliser cert-manager plus tard:
+      # annotations:
+      #   cert-manager.io/cluster-issuer: letsencrypt-prod
+      tls:
+        enabled: false
+        # Pour activer TLS plus tard:
+        # enabled: true
+        # selfSignedCert: false
+
+  # Configuration du controller
+  controller:
+    enabled: true
+    replicas: 1
+    logLevel: INFO
+
+    # Ressources limitées pour POC
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi
+
+    # Configuration pour intégration avec ArgoCD
+    argocd:
+      integrationEnabled: true
+      # Namespace où ArgoCD est installé
+      namespace: argocd
+
+  # Webhooks server
+  webhooksServer:
+    enabled: true
+    replicas: 1
+    logLevel: INFO
+
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+
+  # Garbage collector - configuration allégée pour POC
+  garbageCollector:
+    enabled: true
+    schedule: "0 */6 * * *"  # Toutes les 6h au lieu de toutes les heures
+    workers: 2
+    maxRetainedPromotions: 10  # Réduit pour POC
+    minPromotionDeletionAge: 168h  # 1 semaine au lieu de 2
+    maxRetainedFreight: 10  # Réduit pour POC
+    minFreightDeletionAge: 168h  # 1 semaine au lieu de 2
+    logLevel: INFO
+
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+
+  # Installation des CRDs
+  crds:
+    install: true
+    keep: true
+
+  # RBAC
+  rbac:
+    installClusterRoles: true
+    installClusterRoleBindings: true
+
+# Configuration Argo Rollouts (dépendance de Kargo)
+argo-rollouts:
+  # Installation minimale pour POC
+  installCRDs: true
+
+  controller:
+    replicas: 1
+
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+
+  # Dashboard optionnel pour visualiser les rollouts
+  dashboard:
+    enabled: true
+    replicas: 1
+
+    resources:
+      requests:
+        cpu: 25m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 64Mi
+
+    # Ingress pour le dashboard
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      annotations: {}
+      hosts:
+        - argo-rollouts.homelab.lan
+
+  # Configuration du repository Git pour les notifications et intégrations
+  dashboard:
+    scm:
+      github:
+        enabled: true
+        # URL du repository pour les liens dans le dashboard
+        repoURL: https://github.com/ChapChap/argo-dojo-kube

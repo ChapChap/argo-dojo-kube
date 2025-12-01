@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: kargo-repo-github
+  namespace: kargo
+  labels:
+    kargo.akuity.io/secret-type: repository
+    app.kubernetes.io/name: kargo
+    app.kubernetes.io/managed-by: Helm
+stringData:
+  repoURL: https://github.com/ChapChap/argo-dojo-kube.git
+  # Pour un repo public, pas besoin de credentials
+  # Pour un repo privé, ajouter:
+  # username: git
+  # password: <GITHUB_PAT>
