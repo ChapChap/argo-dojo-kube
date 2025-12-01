@@ -12,8 +12,8 @@ argo-cd:
             name: Google
             config:
               issuer: https://accounts.google.com
-              clientID: $dex.google.clientId
-              clientSecret: $dex.google.clientSecret
+              clientID: $argocd-google-oidc:clientId
+              clientSecret: $argocd-google-oidc:clientSecret
               redirectURI: http://argocd.homelab.lan/api/dex/callback
     rbac:
       # Policy RBAC - tous les utilisateurs authentifiés sont admins par défaut
