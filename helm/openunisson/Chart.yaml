@@ -1,0 +1,17 @@
+apiVersion: v2
+name: openunisson
+description: A Helm chart for deployment openunisson on Kubernetes
+type: application
+version: 1.0.0
+dependencies:
+  - name: openunisson-operator
+    version: 3.0.22
+    repository: https://nexus.tremolo.io/repository/helm
+
+  - name: orchestra
+    version: 3.1.25
+    repository: https://nexus.tremolo.io/repository/helm
+
+  - name: orchestra-login-portal
+    version: 2.3.76
+    repository: https://nexus.tremolo.io/repository/helm
