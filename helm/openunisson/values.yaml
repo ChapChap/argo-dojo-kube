@@ -7,3 +7,7 @@ orchestra:
     force_redirect_to_tls: false
     createIngressCertificate: false
     ingress_type: traefik
+
+  github:
+  client_id: Ov23lir4dVXFt65rX15x
+  teams: ChapChap/
