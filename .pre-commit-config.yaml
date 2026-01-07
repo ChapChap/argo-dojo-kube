@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: helm-deps
+        name: Helm Dependencies
+        entry: make helm-deps
+        language: system
+        files: ^.*Chart\.yaml$
+        pass_filenames: false
