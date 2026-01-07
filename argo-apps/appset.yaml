@@ -34,7 +34,7 @@ spec:
         targetRevision: main
         path: "{{ .path.path }}"
         helm:
-          releaseName: "{{ .path.basename }}"
+          releaseName: '{{ if eq .path.basename "openunison" }}ou{{ else }}{{ .path.basename }}{{ end }}'
           valueFiles:
             - values.yaml
       destination:
