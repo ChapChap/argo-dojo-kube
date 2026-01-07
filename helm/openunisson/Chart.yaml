@@ -4,7 +4,7 @@ description: A Helm chart for deployment openunisson on Kubernetes
 type: application
 version: 1.0.0
 dependencies:
-  - name: openunisson-operator
+  - name: openunison-operator
     version: 3.0.22
     repository: https://nexus.tremolo.io/repository/helm
 

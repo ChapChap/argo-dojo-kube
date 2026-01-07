@@ -1,0 +1,9 @@
+orchestra:
+  network:
+    openunison_host: "k8sou.homelab.lan"
+    dashboard_host: "k8sdb.homelab.lan"
+    api_server_host: "k8sapi.homelab.lan"
+    k8s_url: http://kubernetes.default.svc:443
+    force_redirect_to_tls: false
+    createIngressCertificate: false
+    ingress_type: traefik

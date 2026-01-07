@@ -1,0 +1,12 @@
+dependencies:
+- name: openunison-operator
+  repository: https://nexus.tremolo.io/repository/helm
+  version: 3.0.22
+- name: orchestra
+  repository: https://nexus.tremolo.io/repository/helm
+  version: 3.1.25
+- name: orchestra-login-portal
+  repository: https://nexus.tremolo.io/repository/helm
+  version: 2.3.76
+digest: sha256:7cdd210829e7ec4a4f87f08c756d8f9ca5369a9bad15b220ecfbf3b41d9160e9
+generated: "2026-01-07T12:45:43.663984+01:00"
