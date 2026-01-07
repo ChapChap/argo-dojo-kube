@@ -1,4 +1,9 @@
 orchestra:
+  openunison:
+    auto_timestamp: false
+    force_update: initial-deployment
+    secrets: []
+
   network:
     openunison_host: "k8sou.homelab.lan"
     dashboard_host: "k8sdb.homelab.lan"
@@ -9,5 +14,5 @@ orchestra:
     ingress_type: traefik
 
   github:
-  client_id: Ov23lir4dVXFt65rX15x
-  teams: ChapChap/
+    client_id: Ov23lir4dVXFt65rX15x
+    teams: ChapChap/
