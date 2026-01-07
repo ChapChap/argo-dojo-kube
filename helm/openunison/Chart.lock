@@ -8,5 +8,5 @@ dependencies:
 - name: orchestra-login-portal
   repository: https://nexus.tremolo.io/repository/helm
   version: 2.3.76
-digest: sha256:7cdd210829e7ec4a4f87f08c756d8f9ca5369a9bad15b220ecfbf3b41d9160e9
-generated: "2026-01-07T12:45:43.663984+01:00"
+digest: sha256:c0bf3cbd3d2a6207cf6e43059581d4ae3008f2398408caad2afcb3601f16a2b5
+generated: "2026-01-07T18:24:11.552049+01:00"
