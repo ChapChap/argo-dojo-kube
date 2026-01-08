@@ -1,0 +1,22 @@
+orchestra:
+  openunison:
+    auto_timestamp: false
+    force_update: initial-deployment
+    secrets: []
+
+  network:
+    openunison_host: "k8sou.homelab.lan"
+    dashboard_host: "k8sdb.homelab.lan"
+    api_server_host: "k8sapi.homelab.lan"
+    k8s_url: http://kubernetes.default.svc:443
+    force_redirect_to_tls: false
+    createIngressCertificate: false
+    ingress_type: traefik
+
+  github:
+    client_id: Ov23lir4dVXFt65rX15x
+    teams: ChapChap/
+
+  trusted_certs:
+  - name: k8s_master
+    pem_b64: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJkekNDQVIyZ0F3SUJBZ0lCQURBS0JnZ3Foa2pPUFFRREFqQWpNU0V3SHdZRFZRUUREQmhyTTNNdGMyVnkKZG1WeUxXTmhRREUzTmpJM01qZzVOREF3SGhjTk1qVXhNVEE1TWpJMU5UUXdXaGNOTXpVeE1UQTNNakkxTlRRdwpXakFqTVNFd0h3WURWUVFEREJock0zTXRjMlZ5ZG1WeUxXTmhRREUzTmpJM01qZzVOREF3V1RBVEJnY3Foa2pPClBRSUJCZ2dxaGtqT1BRTUJCd05DQUFRZzVJODMxMS9xT2NEUFRhV1Fob3pBNkpHMTM3N2phSGNHNFZ5c0ZOL3YKaENsaUROVzdNOVJDUDBIYjd0QUl6ZlpSdWJpRWFQRCtNWEYwTzFXbGpzbjhvMEl3UURBT0JnTlZIUThCQWY4RQpCQU1DQXFRd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBZEJnTlZIUTRFRmdRVXgrVjRTSWkvSmNVZDhpSUQxeVRFCjNwQWVZZEV3Q2dZSUtvWkl6ajBFQXdJRFNBQXdSUUlnS29WOHJlc0MzcDVHc29EMktiNmlrK2JjVDFqWUEvWmIKYnMxRjdPdDdwS0FDSVFEbHhzdWt5Ym5LaG1ocFl0UHMxWklDQnFxdTl0Z3p4VU5qSDltdEFRaS9qUT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
