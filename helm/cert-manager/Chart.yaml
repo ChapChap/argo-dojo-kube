@@ -1,0 +1,9 @@
+apiVersion: v2
+name: cert-manager
+description: A Helm chart for deployment cert-manager operator on Kubernetes
+type: application
+version: 1.19.2
+dependencies:
+  - name: cert-manager
+    version: v1.19.2
+    repository: oci://quay.io/jetstack/charts
