@@ -11,13 +11,13 @@ dependencies:
       - openunison-operator
 
   - name: orchestra
-    version: 3.1.25
+    version: 3.1.26
     repository: https://nexus.tremolo.io/repository/helm
     tags:
       - orchestra
 
   - name: orchestra-login-portal
-    version: 2.3.76
+    version: 2.3.78
     repository: https://nexus.tremolo.io/repository/helm
     tags:
       - orchestra-login-portal

@@ -1,0 +1,85 @@
+network:
+  openunison_host: "k8sou.homelab.lan"
+  dashboard_host: "k8sdb.homelab.lan"
+  api_server_host: "k8sapi.homelab.lan"
+  session_inactivity_timeout_seconds: 900
+  k8s_url: https://192.168.1.41:6443
+  force_redirect_to_tls: false
+  createIngressCertificate: false
+  ingress_type: traefik
+  ingress_annotations:
+    cert-manager.io/cluster-issuer: "my-ca-issuer"
+  traefik:
+    secure: false
+    entrypoints:
+      plaintext: web
+      tls: websecure
+
+cert_template:
+  ou: "Kubernetes"
+  o: "ChapChap"
+  l: "Homelab"
+  st: "France"
+  c: "FR"
+
+myvd_config_path: "WEB-INF/myvd.conf"
+k8s_cluster_name: openunison-cp
+enable_impersonation: true
+
+impersonation:
+  use_jetstack: true
+  explicit_certificate_trust: false
+
+dashboard:
+  namespace: "kubernetes-dashboard"
+  cert_name: "kubernetes-dashboard-certs"
+  label: "k8s-app=kubernetes-dashboard"
+  service_name: kubernetes-dashboard
+  new: false
+
+certs:
+  use_k8s_cm: false
+
+trusted_certs:
+- name: k8s_master
+  pem_b64: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJkekNDQVIyZ0F3SUJBZ0lCQURBS0JnZ3Foa2pPUFFRREFqQWpNU0V3SHdZRFZRUUREQmhyTTNNdGMyVnkKZG1WeUxXTmhRREUzTmpJM01qZzVOREF3SGhjTk1qVXhNVEE1TWpJMU5UUXdXaGNOTXpVeE1UQTNNakkxTlRRdwpXakFqTVNFd0h3WURWUVFEREJock0zTXRjMlZ5ZG1WeUxXTmhRREUzTmpJM01qZzVOREF3V1RBVEJnY3Foa2pPClBRSUJCZ2dxaGtqT1BRTUJCd05DQUFRZzVJODMxMS9xT2NEUFRhV1Fob3pBNkpHMTM3N2phSGNHNFZ5c0ZOL3YKaENsaUROVzdNOVJDUDBIYjd0QUl6ZlpSdWJpRWFQRCtNWEYwTzFXbGpzbjhvMEl3UURBT0JnTlZIUThCQWY4RQpCQU1DQXFRd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBZEJnTlZIUTRFRmdRVXgrVjRTSWkvSmNVZDhpSUQxeVRFCjNwQWVZZEV3Q2dZSUtvWkl6ajBFQXdJRFNBQXdSUUlnS29WOHJlc0MzcDVHc29EMktiNmlrK2JjVDFqWUEvWmIKYnMxRjdPdDdwS0FDSVFEbHhzdWt5Ym5LaG1ocFl0UHMxWklDQnFxdTl0Z3p4VU5qSDltdEFRaS9qUT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+- name: unison-ca # Le root-ca généré par cert-manager
+  pem_b64: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJlakNDQVNDZ0F3SUJBZ0lVRzFkWTNNV2xPVDQ2V1oyeGNMQnZ1Y3JydjRzd0NnWUlLb1pJemowRUF3SXcKR3pFWk1CY0dBMVVFQXhNUWJYa3RjMlZzWm5OcFoyNWxaQzFqWVRBZUZ3MHlOakF4TURreE5qVTJNek5hRncweQpOakEwTURreE5qVTJNek5hTUJzeEdUQVhCZ05WQkFNVEVHMTVMWE5sYkdaemFXZHVaV1F0WTJFd1dUQVRCZ2NxCmhrak9QUUlCQmdncWhrak9QUU1CQndOQ0FBUlUydEkwbEZUMEVPbDNjWmtKUjQ4ZGowTjhKRUdTbm0reDJycGcKeGt5OU1PS1lWcmxSd1V6dk5LdFIrUzlPMmcxTnhuQ0U2YXJxQk5OQmdUbzdoTzBsbzBJd1FEQU9CZ05WSFE4QgpBZjhFQkFNQ0FxUXdEd1lEVlIwVEFRSC9CQVV3QXdFQi96QWRCZ05WSFE0RUZnUVVtc2NxMUVsbVFLR3BWK21NCkVDTUdvcHNMbVBBd0NnWUlLb1pJemowRUF3SURTQUF3UlFJZ1BDOTVXYzRQZmFPa0tEU3pkSlhpUlBBOVN1Sm8KM1lvM2RsRWNLSlE5SmVnQ0lRRFhhN0NhczIvN2kwa2pNQWJmcU1oTHg2dUt6UmhCZEg2bGEyQ2g2M09DRWc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+
+monitoring:
+  prometheus_service_account: system:serviceaccount:prometheus:prometheus-kube-prometheus-prometheus
+
+github:
+ client_id: Ov23lir4dVXFt65rX15x
+ teams: theodo-cloud/homelab-k8s
+
+network_policies:
+  enabled: false
+  ingress:
+    enabled: true
+    labels:
+      app.kubernetes.io/name: ingress-nginx
+  monitoring:
+    enabled: true
+    labels:
+      app.kubernetes.io/name: monitoring
+  apiserver:
+    enabled: false
+    labels:
+      app.kubernetes.io/name: kube-system
+
+services:
+  enable_tokenrequest: false
+  token_request_audience: api
+  token_request_expiration_seconds: 600
+  node_selectors: []
+
+openunison:
+  replicas: 1
+  non_secret_data:
+    K8S_DB_SSO: oidc
+    PROMETHEUS_SERVICE_ACCOUNT: system:serviceaccount:monitoring:prometheus-k8s
+    SHOW_PORTAL_ORGS: "false"
+  secrets: []
+  enable_provisioning: false
+  use_standard_jit_workflow: true

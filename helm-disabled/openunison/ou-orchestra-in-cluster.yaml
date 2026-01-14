@@ -1,0 +1,1560 @@
+---
+# Source: orchestra/templates/infrastructure/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp:
+  name: openunison-orchestra
+  namespace: openunison
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+---
+# Source: orchestra/templates/kube-oidc-proxy-tls.yaml
+apiVersion: v1
+data:
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJlakNDQVNDZ0F3SUJBZ0lVRzFkWTNNV2xPVDQ2V1oyeGNMQnZ1Y3JydjRzd0NnWUlLb1pJemowRUF3SXcKR3pFWk1CY0dBMVVFQXhNUWJYa3RjMlZzWm5OcFoyNWxaQzFqWVRBZUZ3MHlOakF4TURreE5qVTJNek5hRncweQpOakEwTURreE5qVTJNek5hTUJzeEdUQVhCZ05WQkFNVEVHMTVMWE5sYkdaemFXZHVaV1F0WTJFd1dUQVRCZ2NxCmhrak9QUUlCQmdncWhrak9QUU1CQndOQ0FBUlUydEkwbEZUMEVPbDNjWmtKUjQ4ZGowTjhKRUdTbm0reDJycGcKeGt5OU1PS1lWcmxSd1V6dk5LdFIrUzlPMmcxTnhuQ0U2YXJxQk5OQmdUbzdoTzBsbzBJd1FEQU9CZ05WSFE4QgpBZjhFQkFNQ0FxUXdEd1lEVlIwVEFRSC9CQVV3QXdFQi96QWRCZ05WSFE0RUZnUVVtc2NxMUVsbVFLR3BWK21NCkVDTUdvcHNMbVBBd0NnWUlLb1pJemowRUF3SURTQUF3UlFJZ1BDOTVXYzRQZmFPa0tEU3pkSlhpUlBBOVN1Sm8KM1lvM2RsRWNLSlE5SmVnQ0lRRFhhN0NhczIvN2kwa2pNQWJmcU1oTHg2dUt6UmhCZEg2bGEyQ2g2M09DRWc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+kind: Secret
+metadata:
+  name: unison-ca
+  namespace: openunison
+type: Opaque
+---
+# Source: orchestra/templates/infrastructure/myvd_simple.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myvd
+  namespace: openunison
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: myvd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+data:
+  myvd.conf: |-
+    #Global AuthMechConfig
+    server.globalChain=accesslog
+
+    server.globalChain.accesslog.className=com.tremolosecurity.proxy.myvd.log.AccessLog
+
+    server.nameSpaces=rootdse,myvdroot,shadowUsers
+    server.rootdse.chain=dse
+    server.rootdse.nameSpace=
+    server.rootdse.weight=0
+    server.rootdse.dse.className=net.sourceforge.myvd.inserts.RootDSE
+    server.rootdse.dse.config.namingContexts=o=Tremolo
+    server.myvdroot.chain=root
+    server.myvdroot.nameSpace=o=Tremolo
+    server.myvdroot.weight=0
+    server.myvdroot.root.className=net.sourceforge.myvd.inserts.RootObject
+
+    server.shadowUsers.chain=mapping,api
+    server.shadowUsers.nameSpace=ou=shadow,o=Tremolo
+    server.shadowUsers.weight=0
+    server.shadowUsers.enabled=true
+    server.shadowUsers.debug.className=net.sourceforge.myvd.inserts.DumpTransaction
+    server.shadowUsers.debug.config.logLevel=info
+    server.shadowUsers.debug.config.label=k8s
+    server.shadowUsers.mapping.className=net.sourceforge.myvd.inserts.mapping.AttributeMapper
+    server.shadowUsers.mapping.config.mapping=mail=email,givenName=first_name,sn=last_name
+    server.shadowUsers.api.className=com.tremolosecurity.myvd.K8sCrdInsert
+    server.shadowUsers.api.config.alwaysMapUIDInFilter=true
+    server.shadowUsers.api.config.nameSpace=openunison
+    server.shadowUsers.api.config.k8sTargetName=k8s
+    server.shadowUsers.api.config.alwaysMapUIDInFilter=true
+---
+# Source: orchestra/templates/infrastructure/namespace-holder.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: namespace-holder
+  namespace: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+data:
+  namespace: "openunison"
+---
+# Source: orchestra/templates/infrastructure/openunison.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-server-config
+  namespace: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+data:
+  oidc-api-server-flags: |-
+                           --oidc-issuer-url=https://k8sou.homelab.lan/auth/idp/k8sIdp
+                           --oidc-client-id=kubernetes
+                           --oidc-username-claim=sub
+                           --oidc-groups-claim=groups
+                           --oidc-ca-file=/etc/kubernetes/pki/ou-ca.pem
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: impersonator-openunison-orchestra
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - users
+  - groups
+  - serviceaccounts
+  verbs:
+  - impersonate
+- apiGroups:
+  - "authentication.k8s.io"
+  resources:
+  - "userextras/scopes"
+  - "userextras/remote-client-ip"
+  - "tokenreviews"
+  # to support end user impersonation
+  - "userextras/originaluser.jetstack.io-user"
+  - "userextras/originaluser.jetstack.io-groups"
+  - "userextras/originaluser.jetstack.io-extra"
+  - "userextras/authentication.kubernetes.io/credential-id"
+  verbs:
+  - "create"
+  - "impersonate"
+- apiGroups: 
+  - "authorization.k8s.io"
+  resources:
+  - "subjectaccessreviews"
+  verbs:
+  - "create"
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: list-namespaces-orchestra
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - namespaces
+  verbs:
+  - list
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: orchestra-certs-orchestra
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+rules:
+- apiGroups:
+  - certificates.k8s.io
+  resources:
+  - certificatesigningrequests
+  - certificatesigningrequests/approval
+  verbs:
+  - "*"
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: openunison-operator-orchestra-webhooks
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+rules:
+- apiGroups: ["admissionregistration.k8s.io"]
+  resources: ["validatingwebhookconfigurations"]
+  resourceNames: ["openunison-workflow-validation-orchestra"]
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - patch
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    audit2rbac.liggitt.net/generated: "true"
+    audit2rbac.liggitt.net/user: system-serviceaccount-openunison-openunison-orchestra
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+  name: audit2rbac:system:serviceaccount:openunison:openunison-orchestra
+rules:
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: openunison-load-crds-orchestra
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+rules:
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs:
+  - get
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: impersonator-openunison-orchestra
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: impersonator-openunison-orchestra
+subjects:
+- kind: ServiceAccount
+  name: openunison-orchestra
+  namespace: openunison
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: openunison-cluster-list-namespaces-orchestra
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+subjects:
+- kind: Group
+  name: users
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: list-namespaces-orchestra
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: orchestra-certs-orchestra
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+subjects:
+- kind: ServiceAccount
+  name: openunison-operator
+  namespace: openunison
+roleRef:
+  kind: ClusterRole
+  name: orchestra-certs-orchestra
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: openunison-operator-orchestra-webhooks
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+subjects:
+- kind: ServiceAccount
+  name: openunison-operator
+  namespace: openunison
+roleRef:
+  kind: ClusterRole
+  name: openunison-operator-orchestra-webhooks
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    audit2rbac.liggitt.net/generated: "true"
+    audit2rbac.liggitt.net/user: system-serviceaccount-openunison-openunison-orchestra
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+  name: audit2rbac:system:serviceaccount:openunison:openunison-orchestra
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: audit2rbac:system:serviceaccount:openunison:openunison-orchestra
+subjects:
+- kind: ServiceAccount
+  name: openunison-orchestra
+  namespace: openunison
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: openunison-crds-get-orchestra
+  namespace: openunison
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+subjects:
+- kind: ServiceAccount
+  name: openunison-orchestra
+  namespace: openunison
+roleRef:
+  kind: ClusterRole
+  name: openunison-load-crds-orchestra
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: kubernetes-dashboard
+  name: orchestra-dashboard-orchestra
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - secrets
+  - pods
+  verbs:
+  - "*"
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: openunison
+  name: openunison-secrets
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs:
+  - get
+  - list
+  - watch
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: openunison
+  name: openunison-trusts-get
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+rules:
+- apiGroups: ["openunison.tremolo.io"]
+  resources: ["trusts","portalurls","orgs","authmechs","authchains","resultgroups","applications","customazs","targets","workflows","oujobs","reports","groupmetadatas","messagelisteners","javascriptmappings","notifiers","waitforstates","endsessions","namespacegroupmetadatas"]
+  verbs:
+  - get
+  - list
+  - watch
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: openunison
+  name: openunison-endsessions-delete
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+rules:
+- apiGroups: ["openunison.tremolo.io"]
+  resources: ["endsessions"]
+  verbs:
+  - delete
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: openunison
+  name: oidc-user-sessions-orchestra
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+rules:
+- apiGroups:
+  - openunison.tremolo.io
+  resources:
+  - oidc-sessions
+  - users
+  verbs:
+  - "*"
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: orchestra-dashboard-orchestra
+  namespace: kubernetes-dashboard
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+subjects:
+- kind: ServiceAccount
+  name: openunison-operator
+  namespace: openunison
+roleRef:
+  kind: Role
+  name: orchestra-dashboard-orchestra
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: openunison-secrets
+  namespace: openunison
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+subjects:
+- kind: ServiceAccount
+  name: openunison-orchestra
+  namespace: openunison
+roleRef:
+  kind: Role
+  name: openunison-secrets
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: openunison-endsessions-delete
+  namespace: openunison
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+subjects:
+- kind: ServiceAccount
+  name: openunison-orchestra
+  namespace: openunison
+roleRef:
+  kind: Role
+  name: openunison-endsessions-delete
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: openunison-trusts-get
+  namespace: openunison
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+subjects:
+- kind: ServiceAccount
+  name: openunison-orchestra
+  namespace: openunison
+roleRef:
+  kind: Role
+  name: openunison-trusts-get
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: orchestra/templates/infrastructure/rbac.yaml
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: oidc-user-sessions-orchestra
+  namespace: openunison
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+subjects:
+- kind: ServiceAccount
+  name: openunison-orchestra
+  namespace: openunison
+roleRef:
+  kind: Role
+  name: oidc-user-sessions-orchestra
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: orchestra/templates/infrastructure/jetstack.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: kube-oidc-proxy-orchestra
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: kube-oidc-proxy
+    app.kubernetes.io/part-of: openunison
+    
+  name: kube-oidc-proxy-orchestra
+  namespace: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "50"
+    
+    
+    
+    
+    
+spec:
+  ports:
+  - port: 443
+    protocol: TCP
+    targetPort: 8443
+    name: https-kube-oidc-proxy
+  selector:
+    app: kube-oidc-proxy-orchestra
+  type: "ClusterIP"
+---
+# Source: orchestra/templates/infrastructure/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: openunison-orchestra
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: network
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+    
+    
+    
+    traefik.ingress.kubernetes.io/service.sticky.cookie: "true"
+    traefik.ingress.kubernetes.io/service.sticky.cookie.name: openunison-sticky
+    traefik.ingress.kubernetes.io/service.sticky.cookie.secure: "true"
+    traefik.ingress.kubernetes.io/service.sticky.cookie.samesite: "none"
+    traefik.ingress.kubernetes.io/service.sticky.cookie.httponly: "true"
+    
+    
+  name: openunison-orchestra
+  namespace: openunison
+spec:
+  ports:
+  
+  - name: https-orchestra
+  
+    port: 443
+    protocol: TCP
+    targetPort: 8443
+  
+  - name: http-orchestra
+  
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    application: openunison-orchestra
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+  type: "ClusterIP"
+status:
+  loadBalancer: {}
+---
+# Source: orchestra/templates/infrastructure/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: openunison-orchestra
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: application
+    app.kubernetes.io/part-of: openunison
+  name: openunison-orchestra
+  namespace: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "30"
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      application: openunison-orchestra
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        application: openunison-orchestra
+        app: openunison-orchestra
+        app.kubernetes.io/name: openunison
+        app.kubernetes.io/instance: openunison-orchestra
+        app.kubernetes.io/component: application
+        app.kubernetes.io/part-of: openunison
+    spec:
+      
+      
+      hostNetwork: false
+      
+
+      containers:
+      - env:
+        - name: XDG_CACHE_HOME
+          value: /tmp/graaljscache
+        
+        - name: JAVA_OPTS
+          value: "-Djava.awt.headless=true -Djava.security.egd=file:/dev/./urandom -DunisonEnvironmentFile=/etc/openunison/ou.env -Djavax.net.ssl.trustStore=/etc/openunison/cacerts.jks -Dpolyglot.engine.WarnInterpreterOnly=false"
+        
+        - name: fortriggerupdates
+          value: changeme
+        
+        
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - "ALL"
+          readOnlyRootFilesystem: true
+          
+          seccompProfile:
+            type: RuntimeDefault
+          runAsNonRoot: true
+          runAsUser: 431
+          runAsGroup: 433
+          
+        image: ghcr.io/openunison/openunison-k8s:1.0.43.1
+        imagePullPolicy: Always
+        livenessProbe:
+          exec:
+            command:
+            
+            
+            - /usr/local/openunison/bin/check_alive.sh
+            
+            - https://127.0.0.1:8443/auth/idp/k8sIdp/.well-known/openid-configuration
+            
+            - issuer
+            
+            - https://127.0.0.1:8443/check_alive
+            
+            - alive
+            
+            
+          failureThreshold: 10
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 10
+        name: openunison-orchestra
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 8443
+          name: https
+          protocol: TCP
+        readinessProbe:
+          exec:
+            command:
+            
+            
+            - /usr/local/openunison/bin/check_alive.sh
+            
+            - https://127.0.0.1:8443/auth/idp/k8sIdp/.well-known/openid-configuration
+            
+            - issuer
+            
+            - https://127.0.0.1:8443/check_alive
+            
+            - alive
+            
+            
+          failureThreshold: 3
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 10
+        
+        terminationMessagePath: "/dev/termination-log"
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: "/usr/local/openunison/.config"
+          name: local-config
+        - mountPath: "/etc/openunison"
+          name: secret-volume
+          readOnly: true
+        - mountPath: /tmp
+          name: tmp
+        
+        
+        - mountPath: "/etc/myvd"
+          name: "myvd-volume"
+          readOnly: true
+        
+        
+        
+        
+        
+        
+      automountServiceAccountToken: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      serviceAccount: openunison-orchestra
+      
+      securityContext:
+        fsGroup: 433
+        supplementalGroups: [433]
+        seccompProfile:
+          type: RuntimeDefault
+        runAsNonRoot: true
+        runAsUser: 431
+        runAsGroup: 433
+      
+      volumes:
+      - name: local-config
+        emptyDir: {}
+      - name: secret-volume
+        secret:
+          defaultMode: 420
+          secretName: orchestra
+      - name: tmp
+        emptyDir: {}
+      
+      
+      - name: myvd-volume
+        configMap:
+          name: "myvd"
+      
+      
+      
+      
+      
+      
+      
+      nodeSelector: {}
+---
+# Source: orchestra/templates/infrastructure/jetstack.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: kube-oidc-proxy-orchestra
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: kube-oidc-proxy
+    app.kubernetes.io/part-of: openunison
+  name: kube-oidc-proxy-orchestra
+  namespace: openunison
+  
+  
+  annotations:
+    argocd.argoproj.io/sync-wave: "50"
+  
+  
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kube-oidc-proxy-orchestra
+  template:
+    metadata:
+      labels:
+        app: kube-oidc-proxy-orchestra
+        app.kubernetes.io/name: openunison
+        app.kubernetes.io/instance: openunison-orchestra
+        app.kubernetes.io/component: kube-oidc-proxy
+        app.kubernetes.io/part-of: openunison
+    spec:
+      
+      serviceAccountName: openunison-orchestra
+      containers:
+      - image: ghcr.io/tremolosecurity/kube-oidc-proxy:1.0.9
+        ports:
+        - containerPort: 8443
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        name: kube-oidc-proxy-orchestra
+        command: ["kube-oidc-proxy"]
+        args:
+          - "--secure-port=8443"
+          - "--tls-cert-file=/etc/oidc/tls/crt.pem"
+          - "--tls-private-key-file=/etc/oidc/tls/key.pem"
+          - "--oidc-client-id=kubernetes"
+          - "--oidc-issuer-url=https://k8sou.homelab.lan/auth/idp/k8sIdp"
+          - "--oidc-username-claim=sub"
+          - "--oidc-groups-claim=groups"
+          
+          - "--oidc-ca-file=/etc/oidc/oidc-ca.pem"
+          
+          
+          
+        imagePullPolicy: Always
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - "ALL"
+          
+          seccompProfile:
+            type: RuntimeDefault
+          runAsNonRoot: true
+          runAsUser: 431
+          runAsGroup: 433
+          
+        volumeMounts:
+          
+          - name: kube-oidc-proxy-config
+            mountPath: /etc/oidc
+            readOnly: true
+          
+          - name: kube-oidc-proxy-tls
+            mountPath: /etc/oidc/tls
+            readOnly: true
+          
+        
+      volumes:
+        
+        - name: kube-oidc-proxy-config
+          secret:
+            secretName: unison-ca
+            items:
+            - key: tls.crt
+              path: oidc-ca.pem
+        
+        
+        - name: kube-oidc-proxy-tls
+          secret:
+            secretName: unison-tls
+            items:
+            - key: tls.crt
+              path: crt.pem
+            - key: tls.key
+              path: key.pem
+      tolerations:
+      
+      
+      nodeSelector: {}
+      
+
+      
+      automountServiceAccountToken: true
+      
+      securityContext:
+        fsGroup: 10001
+        supplementalGroups: [10001]
+        seccompProfile:
+          type: RuntimeDefault
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+---
+# Source: orchestra/templates/infrastructure/cronjob.yaml
+apiVersion: batch/v1
+
+kind: CronJob
+metadata:
+  labels:
+    app: openunison-orchestra
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: cert-management
+    app.kubernetes.io/part-of: openunison
+  name: check-certs-orchestra
+  namespace: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+spec:
+  concurrencyPolicy: Allow
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    metadata:
+      creationTimestamp: null
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            app.kubernetes.io/name: openunison
+            app.kubernetes.io/instance: openunison-orchestra
+            app.kubernetes.io/component: cert-management
+            app.kubernetes.io/part-of: openunison
+          annotations:
+            sidecar.istio.io/inject: "false"
+        spec:
+          
+          containers:
+          - command:
+            - java
+            - -jar
+            - /usr/local/ouoperator/ouoperator.jar
+            - check-certs
+            - https://kubernetes.default.svc
+            - openunison
+            - /var/run/secrets/kubernetes.io/serviceaccount/token
+            - /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            - "2,3,4,5,6"
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - "ALL"
+              
+              seccompProfile:
+                type: RuntimeDefault
+              runAsNonRoot: true
+              runAsUser: 431
+              runAsGroup: 433
+              
+            env:
+            - name: CA_CERTS_PATH
+              value: /usr/lib/jvm/java-17-openjdk-amd64/lib/security/cacerts
+            - name: JAVA_OPTS
+              value: -Djava.awt.headless=true -Djava.security.egd=file:/dev/./urandom -Dsun.net.inetaddr.ttl=0
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            image: "ghcr.io/openunison/openunison-kubernetes-operator:1.0.7"
+            imagePullPolicy: Always
+            name: check-certs-orchestra
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+            
+          dnsPolicy: ClusterFirst
+          restartPolicy: Never
+          schedulerName: default-scheduler
+          serviceAccount: openunison-operator
+          serviceAccountName: openunison-operator
+          terminationGracePeriodSeconds: 30
+          tolerations:
+          
+          
+          nodeSelector: {}
+          
+          
+          
+          securityContext:
+            fsGroup: 10001
+            supplementalGroups: [10001]
+            seccompProfile:
+              type: RuntimeDefault
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+          
+  schedule: "0 2 * * *"
+  successfulJobsHistoryLimit: 3
+  suspend: false
+---
+# Source: orchestra/templates/infrastructure/traefik.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+    traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    
+    cert-manager.io/cluster-issuer: "my-ca-issuer"
+    
+  name: openunison-orchestra
+  namespace: openunison
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: ingress-traefik
+    app.kubernetes.io/part-of: openunison
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: k8sou.homelab.lan
+    http:
+      paths:
+      - backend:
+          service:
+            name: openunison-orchestra
+            port:
+              
+              number: 80
+              
+        path: "/"
+        pathType: Prefix
+  
+  - host: k8sdb.homelab.lan
+    http:
+      paths:
+      - backend:
+          service:
+            name: openunison-orchestra
+            port:
+              
+              number: 80
+              
+        path: "/"
+        pathType: Prefix
+  
+  
+  - host: k8sapi.homelab.lan
+    http:
+      paths:
+      - backend:
+          service:
+            
+            name: kube-oidc-proxy-orchestra
+            
+            port:
+              number: 443
+        path: "/"
+        pathType: Prefix
+  
+  tls:
+  - hosts:
+    - k8sou.homelab.lan
+    - k8sdb.homelab.lan
+    
+    - k8sapi.homelab.lan
+    
+    
+    secretName: ou-tls-certificate
+---
+# Source: orchestra/templates/infrastructure/webhooks.yaml
+#
+#
+#
+#
+#
+---
+# Source: orchestra/templates/infrastructure/traefik.yaml
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: http-orchestra-redirect-to-https
+  namespace: openunison
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: HostRegexp(`k8sou.homelab.lan`)
+      kind: Rule 
+      services:
+        - name: openunison-orchestra
+          port: 80
+      middlewares:
+        - name: redirect-https
+          namespace: openunison
+    
+    - match: HostRegexp(`k8sdb.homelab.lan`)
+      kind: Rule 
+      services:
+        - name: openunison-orchestra
+          port: 80
+      middlewares:
+        - name: redirect-https
+          namespace: openunison
+---
+# Source: orchestra/templates/infrastructure/traefik.yaml
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-https
+  namespace: openunison
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+    port: "443"
+---
+# Source: orchestra/templates/infrastructure/openunison.yaml
+apiVersion: openunison.tremolo.io/v6
+kind: OpenUnison
+metadata:
+  name: orchestra
+  namespace: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+    
+    helm-update: Jan 14 17:12:45 2026 CET
+    
+
+    
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: openunison
+    app.kubernetes.io/part-of: openunison
+spec:
+  dest_secret: orchestra
+  
+  
+  enable_activemq: false
+  
+  activemq_image: ghcr.io/tremolosecurity/activemq-docker:5.18.4
+  hosts:
+  - ingress_name: openunison
+    names:
+    - env_var: OU_HOST
+      name: k8sou.homelab.lan
+    
+    - env_var: K8S_DASHBOARD_HOST
+      name: k8sdb.homelab.lan
+    
+    
+    - env_var: K8S_API_HOST
+      name: k8sapi.homelab.lan
+      
+      service_name: kube-oidc-proxy-orchestra
+      
+    
+    secret_name: ou-tls-certificate
+    ingress_type: traefik
+    
+    
+    
+    annotations: 
+    - name: cert-manager.io/cluster-issuer
+      value: "my-ca-issuer"
+      
+    
+  key_store:
+    update_controller:
+      image: ghcr.io/openunison/openunison-kubernetes-operator:1.0.7
+      schedule: 0 2 * * *
+      days_to_expire: 10
+    key_pairs:
+      create_keypair_template:
+      - name: ou
+        value: "Kubernetes"
+      - name: o
+        value: "ChapChap"
+      - name: l
+        value: "Homelab"
+      - name: st
+        value: "France"
+      - name: c
+        value: "FR"
+      keys: 
+        
+        - create_data:
+            ca_cert: true
+            key_size: 2048
+            server_name: openunison-orchestra.openunison.svc
+            sign_by_k8s_ca: false
+            
+            subject_alternative_names:
+            - k8sapi.homelab.lan
+            
+          import_into_ks: keypair
+          name: unison-tls
+        
+        
+        
+        - create_data:
+            
+            ca_cert: true
+            
+            key_size: 2048
+            server_name: kubernetes-dashboard.kubernetes-dashboard.svc
+            sign_by_k8s_ca: false
+            
+            subject_alternative_names: []
+            
+            target_namespace: kubernetes-dashboard
+            secret_info:
+              type_of_secret: Opaque
+              cert_name: dashboard.crt
+              key_name: dashboard.key
+            delete_pods_labels:
+              
+              - k8s-app=kubernetes-dashboard
+              
+          
+          import_into_ks: "certificate"
+          
+          name: kubernetes-dashboard
+          tls_secret_name: kubernetes-dashboard-certs
+          replace_if_exists: true
+        
+        
+        - create_data:
+            ca_cert: true
+            key_size: 2048
+            server_name: unison-saml2-rp-sig
+            sign_by_k8s_ca: false
+            subject_alternative_names: []
+          import_into_ks: keypair
+          name: unison-saml2-rp-sig
+          tls_secret_name: unison-saml2-rp-sig
+        - create_data:
+            ca_cert: false
+            key_size: 2048
+            server_name: remote-k8s-idp-sig
+            sign_by_k8s_ca: false
+            subject_alternative_names: []
+          import_into_ks: keypair
+          name: remote-k8s-idp-sig
+          tls_secret_name: remote-k8s-idp-sig
+        
+    static_keys: 
+    - name: session-unison
+      version: 1
+    - name: lastmile-oidc
+      version: 1
+    
+    
+    
+    trusted_certificates: 
+      - name: k8s_master
+        pem_data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJkekNDQVIyZ0F3SUJBZ0lCQURBS0JnZ3Foa2pPUFFRREFqQWpNU0V3SHdZRFZRUUREQmhyTTNNdGMyVnkKZG1WeUxXTmhRREUzTmpJM01qZzVOREF3SGhjTk1qVXhNVEE1TWpJMU5UUXdXaGNOTXpVeE1UQTNNakkxTlRRdwpXakFqTVNFd0h3WURWUVFEREJock0zTXRjMlZ5ZG1WeUxXTmhRREUzTmpJM01qZzVOREF3V1RBVEJnY3Foa2pPClBRSUJCZ2dxaGtqT1BRTUJCd05DQUFRZzVJODMxMS9xT2NEUFRhV1Fob3pBNkpHMTM3N2phSGNHNFZ5c0ZOL3YKaENsaUROVzdNOVJDUDBIYjd0QUl6ZlpSdWJpRWFQRCtNWEYwTzFXbGpzbjhvMEl3UURBT0JnTlZIUThCQWY4RQpCQU1DQXFRd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBZEJnTlZIUTRFRmdRVXgrVjRTSWkvSmNVZDhpSUQxeVRFCjNwQWVZZEV3Q2dZSUtvWkl6ajBFQXdJRFNBQXdSUUlnS29WOHJlc0MzcDVHc29EMktiNmlrK2JjVDFqWUEvWmIKYnMxRjdPdDdwS0FDSVFEbHhzdWt5Ym5LaG1ocFl0UHMxWklDQnFxdTl0Z3p4VU5qSDltdEFRaS9qUT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K 
+      - name: unison-ca
+        pem_data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJlakNDQVNDZ0F3SUJBZ0lVRzFkWTNNV2xPVDQ2V1oyeGNMQnZ1Y3JydjRzd0NnWUlLb1pJemowRUF3SXcKR3pFWk1CY0dBMVVFQXhNUWJYa3RjMlZzWm5OcFoyNWxaQzFqWVRBZUZ3MHlOakF4TURreE5qVTJNek5hRncweQpOakEwTURreE5qVTJNek5hTUJzeEdUQVhCZ05WQkFNVEVHMTVMWE5sYkdaemFXZHVaV1F0WTJFd1dUQVRCZ2NxCmhrak9QUUlCQmdncWhrak9QUU1CQndOQ0FBUlUydEkwbEZUMEVPbDNjWmtKUjQ4ZGowTjhKRUdTbm0reDJycGcKeGt5OU1PS1lWcmxSd1V6dk5LdFIrUzlPMmcxTnhuQ0U2YXJxQk5OQmdUbzdoTzBsbzBJd1FEQU9CZ05WSFE4QgpBZjhFQkFNQ0FxUXdEd1lEVlIwVEFRSC9CQVV3QXdFQi96QWRCZ05WSFE0RUZnUVVtc2NxMUVsbVFLR3BWK21NCkVDTUdvcHNMbVBBd0NnWUlLb1pJemowRUF3SURTQUF3UlFJZ1BDOTVXYzRQZmFPa0tEU3pkSlhpUlBBOVN1Sm8KM1lvM2RsRWNLSlE5SmVnQ0lRRFhhN0NhczIvN2kwa2pNQWJmcU1oTHg2dUt6UmhCZEg2bGEyQ2g2M09DRWc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg== 
+    
+  myvd_configmap: "myvd"
+  non_secret_data: 
+    - name: K8S_URL
+      
+      value: https://k8sapi.homelab.lan
+      
+    - name: SESSION_INACTIVITY_TIMEOUT_SECONDS
+      value: "900"
+    
+    - name: K8S_DASHBOARD_NAMESPACE
+      value: kubernetes-dashboard
+    - name: K8S_DASHBOARD_SERVICE
+      value: kubernetes-dashboard
+    
+    - name: K8S_CLUSTER_NAME
+      value: openunison-cp
+    
+
+
+    - name: OPENUNISON_PROVISIONING_ENABLED
+      value: "false"
+
+
+    - name: K8S_IMPERSONATION
+      value: "true"
+    - name: PROMETHEUS_SERVICE_ACCOUNT
+      value: system:serviceaccount:prometheus:prometheus-kube-prometheus-prometheus
+    - name: OU_SVC_NAME
+      value: openunison-orchestra.openunison.svc
+    
+    - name: K8S_TOKEN_TYPE
+      value: legacy
+    
+    
+    - name: K8S_DB_SSO
+      value: "oidc"
+      
+    - name: PROMETHEUS_SERVICE_ACCOUNT
+      value: "system:serviceaccount:monitoring:prometheus-k8s"
+      
+    - name: SHOW_PORTAL_ORGS
+      value: "false"
+      
+    - name: K8S_OPENUNISON_NS
+      value: "openunison"
+  openunison_network_configuration:
+    activemq_dir: "/tmp/amq"
+    allowed_client_names: []
+    ciphers:
+    - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+    - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+    - TLS_RSA_WITH_AES_256_GCM_SHA384
+    - TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384
+    - TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384
+    - TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
+    client_auth: none
+    force_to_secure: false
+    open_external_port: 80
+    open_port: 8080
+    path_to_deployment: "/usr/local/openunison/work"
+    path_to_env_file: "/etc/openunison/ou.env"
+    quartz_dir: "/tmp/quartz"
+    secure_external_port: 443
+    secure_key_alias: unison-tls
+    secure_port: 8443
+    
+  replicas: 1
+  secret_data:
+    - AD_BIND_PASSWORD
+    - K8S_DB_SECRET
+    - unisonKeystorePassword
+
+
+
+    
+  source_secret: orchestra-secrets-source
+  image: ghcr.io/openunison/openunison-k8s:1.0.43.1
+  deployment_data:
+    tokenrequest_api:
+      enabled: false
+      audience: api
+      expirationSeconds: 600
+    liveness_probe_command:
+    
+    - /usr/local/openunison/bin/check_alive.sh
+    
+    - https://127.0.0.1:8443/auth/idp/k8sIdp/.well-known/openid-configuration
+    
+    - issuer
+    
+    - https://127.0.0.1:8443/check_alive
+    
+    - alive
+    
+    readiness_probe_command:
+    
+    - /usr/local/openunison/bin/check_alive.sh
+    
+    - https://127.0.0.1:8443/auth/idp/k8sIdp/.well-known/openid-configuration
+    
+    - issuer
+    
+    - https://127.0.0.1:8443/check_alive
+    
+    - alive
+    
+    pull_secret: ""
+    
+    
+    
+    node_selectors: []
+---
+# Source: orchestra/templates/infrastructure/webhooks.yaml
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: "openunison-workflow-validation-orchestra"
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-orchestra
+    app.kubernetes.io/component: webhooks
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "15"
+webhooks:
+- name: "workflows-openunison.tremolo.io"
+  rules:
+  - apiGroups:   ["openunison.tremolo.io"]
+    apiVersions: ["v1"]
+    operations:  ["CREATE","UPDATE"]
+    resources:   ["workflows"]
+    scope:       "Namespaced"
+  namespaceSelector:
+    matchExpressions:
+    - key: kubernetes.io/metadata.name
+      operator: In
+      values: ["openunison"]
+    
+  clientConfig:
+    service:
+      namespace: openunison
+      name: "openunison-orchestra"
+      path: /k8s/webhooks/v1/workflows
+    caBundle: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUVGekNDQXYrZ0F3SUJBZ0lHQVhWWU5KTXhNQTBHQ1NxR1NJYjNEUUVCQ3dVQU1JR1hNUkl3RUFZRFZRUUcNCkV3bE5lVU52ZFc1MGNua3hHVEFYQmdOVkJBZ1RFRk4wWVhSbElHOW1JRU5zZFhOMFpYSXhFekFSQmdOVkJBY1QNCkNrMTVJRU5zZFhOMFpYSXhEakFNQmdOVkJBb1RCVTE1VDNKbk1STXdFUVlEVlFRTEV3cExkV0psY201bGRHVnoNCk1Td3dLZ1lEVlFRREV5TnZjR1Z1ZFc1cGMyOXVMVzl5WTJobGMzUnlZUzV2Y0dWdWRXNXBjMjl1TG5OMll6QWUNCkZ3MHlNREV3TWpRd01USTBNREZhRncweU1URXdNalF3TVRJME1ERmFNSUdYTVJJd0VBWURWUVFHRXdsTmVVTnYNCmRXNTBjbmt4R1RBWEJnTlZCQWdURUZOMFlYUmxJRzltSUVOc2RYTjBaWEl4RXpBUkJnTlZCQWNUQ2sxNUlFTnMNCmRYTjBaWEl4RGpBTUJnTlZCQW9UQlUxNVQzSm5NUk13RVFZRFZRUUxFd3BMZFdKbGNtNWxkR1Z6TVN3d0tnWUQNClZRUURFeU52Y0dWdWRXNXBjMjl1TFc5eVkyaGxjM1J5WVM1dmNHVnVkVzVwYzI5dUxuTjJZekNDQVNJd0RRWUoNCktvWklodmNOQVFFQkJRQURnZ0VQQURDQ0FRb0NnZ0VCQUt0WW5Pd05wejhyNXNBQWVDRVcwaUM1WmcyNGoxMDINCjlvcFRMSFE2S3RzK0xVZlI4ekV4VFJncG54V1hIbjRTbitKcHl5d01tdktRU3hmT3lCak1nNmlvcDlNZXQ2b1QNCkhWNTlLb0lzM2t6bitFeHFvd0JoeVRyOGFmL3NZb1pXdTlrcXkxWmErcEgzQXpiSWdIM2JjNllGQkQrak8yWDENCmNtSXdCOXFFbytRU2IvOURQVE1tU0tvbGZCdndha1ZVME1lYUwwbGlYUVNlZG5yNHZvZ20xRWR3Y1hRWkxheXANCkVadUVmTDBySVY1bTJiMzhncWYrcnNTSU9QT0RNVWN2VFpmSnQxczZWK2xTTXA2ZVp6TG9GMlF5MVViOHhBQUkNCldYb3hWOXVMdXFFb1FxZEpKTWI3b0ZGVUUvTmpodkVoV0E0c3ljQ3A5Yk1qVi9YMUp2QXlzQTBDQXdFQUFhTm4NCk1HVXdEd1lEVlIwVEFRSC9CQVV3QXdFQi96QU9CZ05WSFE4QkFmOEVCQU1DQWdRd0VnWURWUjBsQVFIL0JBZ3cNCkJnWUVWUjBsQURBdUJnTlZIUkVFSnpBbGdpTnZjR1Z1ZFc1cGMyOXVMVzl5WTJobGMzUnlZUzV2Y0dWdWRXNXANCmMyOXVMbk4yWXpBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQWJ6dzlqV09tci9LMmdJdGdpVkd3UGFYRmNJZHMNCjNiamdvVkxYREJkVTFKK3lidm5EVnJEa2owNTlPRzVBOXhRTzEzWVEvbGIreVJNckEwZTdCWEVSR3oxZVlwZmsNCkZoczhCb3QrcENSRVlNMTU3cEtvOUpiN09FTVA4S0FET2xxMFpHYitqN2Zac0NSWlhSbzk5QUpmMms4R0s2WVoNCnFGZE43c1BXUnZXcDRBK2RRbVdPa1RKUVFhdVp5N1lvU1JROUFnSkxvdUxqbzd4QjdLM1hwTXBkNFl0UzBYd1kNClJxV0dreGh6eGtDaWJTZFhrSUFGSkZxc0pZVHFTdHQ4ZXdZaUQyL1Zob3ozcjJjZC8vcXZIWXljL1U5Zm9zM3UNCmR5R1NPWGhnS2pJSTRQblovOS9kemJDWFc0dlFFUVJEaENTTHpmSk5KS3NmMkt2aUNmM3BHa2tHNmc9PQ0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="
+  admissionReviewVersions: ["v1"]
+  sideEffects: None
+  timeoutSeconds: 30
+- name: "customazs-openunison.tremolo.io"
+  rules:
+  - apiGroups:   ["openunison.tremolo.io"]
+    apiVersions: ["v1"]
+    operations:  ["CREATE","UPDATE"]
+    resources:   ["customazs"]
+    scope:       "Namespaced"
+  namespaceSelector:
+    matchExpressions:
+    - key: kubernetes.io/metadata.name
+      operator: In
+      values: ["openunison"]
+  clientConfig:
+    service:
+      namespace: openunison
+      name: "openunison-orchestra"
+      path: /k8s/webhooks/v1/customazs
+    caBundle: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUVGekNDQXYrZ0F3SUJBZ0lHQVhWWU5KTXhNQTBHQ1NxR1NJYjNEUUVCQ3dVQU1JR1hNUkl3RUFZRFZRUUcNCkV3bE5lVU52ZFc1MGNua3hHVEFYQmdOVkJBZ1RFRk4wWVhSbElHOW1JRU5zZFhOMFpYSXhFekFSQmdOVkJBY1QNCkNrMTVJRU5zZFhOMFpYSXhEakFNQmdOVkJBb1RCVTE1VDNKbk1STXdFUVlEVlFRTEV3cExkV0psY201bGRHVnoNCk1Td3dLZ1lEVlFRREV5TnZjR1Z1ZFc1cGMyOXVMVzl5WTJobGMzUnlZUzV2Y0dWdWRXNXBjMjl1TG5OMll6QWUNCkZ3MHlNREV3TWpRd01USTBNREZhRncweU1URXdNalF3TVRJME1ERmFNSUdYTVJJd0VBWURWUVFHRXdsTmVVTnYNCmRXNTBjbmt4R1RBWEJnTlZCQWdURUZOMFlYUmxJRzltSUVOc2RYTjBaWEl4RXpBUkJnTlZCQWNUQ2sxNUlFTnMNCmRYTjBaWEl4RGpBTUJnTlZCQW9UQlUxNVQzSm5NUk13RVFZRFZRUUxFd3BMZFdKbGNtNWxkR1Z6TVN3d0tnWUQNClZRUURFeU52Y0dWdWRXNXBjMjl1TFc5eVkyaGxjM1J5WVM1dmNHVnVkVzVwYzI5dUxuTjJZekNDQVNJd0RRWUoNCktvWklodmNOQVFFQkJRQURnZ0VQQURDQ0FRb0NnZ0VCQUt0WW5Pd05wejhyNXNBQWVDRVcwaUM1WmcyNGoxMDINCjlvcFRMSFE2S3RzK0xVZlI4ekV4VFJncG54V1hIbjRTbitKcHl5d01tdktRU3hmT3lCak1nNmlvcDlNZXQ2b1QNCkhWNTlLb0lzM2t6bitFeHFvd0JoeVRyOGFmL3NZb1pXdTlrcXkxWmErcEgzQXpiSWdIM2JjNllGQkQrak8yWDENCmNtSXdCOXFFbytRU2IvOURQVE1tU0tvbGZCdndha1ZVME1lYUwwbGlYUVNlZG5yNHZvZ20xRWR3Y1hRWkxheXANCkVadUVmTDBySVY1bTJiMzhncWYrcnNTSU9QT0RNVWN2VFpmSnQxczZWK2xTTXA2ZVp6TG9GMlF5MVViOHhBQUkNCldYb3hWOXVMdXFFb1FxZEpKTWI3b0ZGVUUvTmpodkVoV0E0c3ljQ3A5Yk1qVi9YMUp2QXlzQTBDQXdFQUFhTm4NCk1HVXdEd1lEVlIwVEFRSC9CQVV3QXdFQi96QU9CZ05WSFE4QkFmOEVCQU1DQWdRd0VnWURWUjBsQVFIL0JBZ3cNCkJnWUVWUjBsQURBdUJnTlZIUkVFSnpBbGdpTnZjR1Z1ZFc1cGMyOXVMVzl5WTJobGMzUnlZUzV2Y0dWdWRXNXANCmMyOXVMbk4yWXpBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQWJ6dzlqV09tci9LMmdJdGdpVkd3UGFYRmNJZHMNCjNiamdvVkxYREJkVTFKK3lidm5EVnJEa2owNTlPRzVBOXhRTzEzWVEvbGIreVJNckEwZTdCWEVSR3oxZVlwZmsNCkZoczhCb3QrcENSRVlNMTU3cEtvOUpiN09FTVA4S0FET2xxMFpHYitqN2Zac0NSWlhSbzk5QUpmMms4R0s2WVoNCnFGZE43c1BXUnZXcDRBK2RRbVdPa1RKUVFhdVp5N1lvU1JROUFnSkxvdUxqbzd4QjdLM1hwTXBkNFl0UzBYd1kNClJxV0dreGh6eGtDaWJTZFhrSUFGSkZxc0pZVHFTdHQ4ZXdZaUQyL1Zob3ozcjJjZC8vcXZIWXljL1U5Zm9zM3UNCmR5R1NPWGhnS2pJSTRQblovOS9kemJDWFc0dlFFUVJEaENTTHpmSk5KS3NmMkt2aUNmM3BHa2tHNmc9PQ0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="
+  admissionReviewVersions: ["v1"]
+  sideEffects: None
+  timeoutSeconds: 30
+- name: "authmechs-openunison.tremolo.io"
+  rules:
+  - apiGroups:   ["openunison.tremolo.io"]
+    apiVersions: ["v1"]
+    operations:  ["CREATE","UPDATE"]
+    resources:   ["authmechs"]
+    scope:       "Namespaced"
+  namespaceSelector:
+    matchExpressions:
+    - key: kubernetes.io/metadata.name
+      operator: In
+      values: ["openunison"]
+  clientConfig:
+    service:
+      namespace: openunison
+      name: "openunison-orchestra"
+      path: /k8s/webhooks/v1/authmechs
+    caBundle: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUVGekNDQXYrZ0F3SUJBZ0lHQVhWWU5KTXhNQTBHQ1NxR1NJYjNEUUVCQ3dVQU1JR1hNUkl3RUFZRFZRUUcNCkV3bE5lVU52ZFc1MGNua3hHVEFYQmdOVkJBZ1RFRk4wWVhSbElHOW1JRU5zZFhOMFpYSXhFekFSQmdOVkJBY1QNCkNrMTVJRU5zZFhOMFpYSXhEakFNQmdOVkJBb1RCVTE1VDNKbk1STXdFUVlEVlFRTEV3cExkV0psY201bGRHVnoNCk1Td3dLZ1lEVlFRREV5TnZjR1Z1ZFc1cGMyOXVMVzl5WTJobGMzUnlZUzV2Y0dWdWRXNXBjMjl1TG5OMll6QWUNCkZ3MHlNREV3TWpRd01USTBNREZhRncweU1URXdNalF3TVRJME1ERmFNSUdYTVJJd0VBWURWUVFHRXdsTmVVTnYNCmRXNTBjbmt4R1RBWEJnTlZCQWdURUZOMFlYUmxJRzltSUVOc2RYTjBaWEl4RXpBUkJnTlZCQWNUQ2sxNUlFTnMNCmRYTjBaWEl4RGpBTUJnTlZCQW9UQlUxNVQzSm5NUk13RVFZRFZRUUxFd3BMZFdKbGNtNWxkR1Z6TVN3d0tnWUQNClZRUURFeU52Y0dWdWRXNXBjMjl1TFc5eVkyaGxjM1J5WVM1dmNHVnVkVzVwYzI5dUxuTjJZekNDQVNJd0RRWUoNCktvWklodmNOQVFFQkJRQURnZ0VQQURDQ0FRb0NnZ0VCQUt0WW5Pd05wejhyNXNBQWVDRVcwaUM1WmcyNGoxMDINCjlvcFRMSFE2S3RzK0xVZlI4ekV4VFJncG54V1hIbjRTbitKcHl5d01tdktRU3hmT3lCak1nNmlvcDlNZXQ2b1QNCkhWNTlLb0lzM2t6bitFeHFvd0JoeVRyOGFmL3NZb1pXdTlrcXkxWmErcEgzQXpiSWdIM2JjNllGQkQrak8yWDENCmNtSXdCOXFFbytRU2IvOURQVE1tU0tvbGZCdndha1ZVME1lYUwwbGlYUVNlZG5yNHZvZ20xRWR3Y1hRWkxheXANCkVadUVmTDBySVY1bTJiMzhncWYrcnNTSU9QT0RNVWN2VFpmSnQxczZWK2xTTXA2ZVp6TG9GMlF5MVViOHhBQUkNCldYb3hWOXVMdXFFb1FxZEpKTWI3b0ZGVUUvTmpodkVoV0E0c3ljQ3A5Yk1qVi9YMUp2QXlzQTBDQXdFQUFhTm4NCk1HVXdEd1lEVlIwVEFRSC9CQVV3QXdFQi96QU9CZ05WSFE4QkFmOEVCQU1DQWdRd0VnWURWUjBsQVFIL0JBZ3cNCkJnWUVWUjBsQURBdUJnTlZIUkVFSnpBbGdpTnZjR1Z1ZFc1cGMyOXVMVzl5WTJobGMzUnlZUzV2Y0dWdWRXNXANCmMyOXVMbk4yWXpBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQWJ6dzlqV09tci9LMmdJdGdpVkd3UGFYRmNJZHMNCjNiamdvVkxYREJkVTFKK3lidm5EVnJEa2owNTlPRzVBOXhRTzEzWVEvbGIreVJNckEwZTdCWEVSR3oxZVlwZmsNCkZoczhCb3QrcENSRVlNMTU3cEtvOUpiN09FTVA4S0FET2xxMFpHYitqN2Zac0NSWlhSbzk5QUpmMms4R0s2WVoNCnFGZE43c1BXUnZXcDRBK2RRbVdPa1RKUVFhdVp5N1lvU1JROUFnSkxvdUxqbzd4QjdLM1hwTXBkNFl0UzBYd1kNClJxV0dreGh6eGtDaWJTZFhrSUFGSkZxc0pZVHFTdHQ4ZXdZaUQyL1Zob3ozcjJjZC8vcXZIWXljL1U5Zm9zM3UNCmR5R1NPWGhnS2pJSTRQblovOS9kemJDWFc0dlFFUVJEaENTTHpmSk5KS3NmMkt2aUNmM3BHa2tHNmc9PQ0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="
+  admissionReviewVersions: ["v1"]
+  sideEffects: None
+  timeoutSeconds: 30
+- name: "authchains-openunison.tremolo.io"
+  rules:
+  - apiGroups:   ["openunison.tremolo.io"]
+    apiVersions: ["v1"]
+    operations:  ["CREATE","UPDATE"]
+    resources:   ["authchains"]
+    scope:       "Namespaced"
+  namespaceSelector:
+    matchExpressions:
+    - key: kubernetes.io/metadata.name
+      operator: In
+      values: ["openunison"]
+  clientConfig:
+    service:
+      namespace: openunison
+      name: "openunison-orchestra"
+      path: /k8s/webhooks/v1/authchains
+    caBundle: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUVGekNDQXYrZ0F3SUJBZ0lHQVhWWU5KTXhNQTBHQ1NxR1NJYjNEUUVCQ3dVQU1JR1hNUkl3RUFZRFZRUUcNCkV3bE5lVU52ZFc1MGNua3hHVEFYQmdOVkJBZ1RFRk4wWVhSbElHOW1JRU5zZFhOMFpYSXhFekFSQmdOVkJBY1QNCkNrMTVJRU5zZFhOMFpYSXhEakFNQmdOVkJBb1RCVTE1VDNKbk1STXdFUVlEVlFRTEV3cExkV0psY201bGRHVnoNCk1Td3dLZ1lEVlFRREV5TnZjR1Z1ZFc1cGMyOXVMVzl5WTJobGMzUnlZUzV2Y0dWdWRXNXBjMjl1TG5OMll6QWUNCkZ3MHlNREV3TWpRd01USTBNREZhRncweU1URXdNalF3TVRJME1ERmFNSUdYTVJJd0VBWURWUVFHRXdsTmVVTnYNCmRXNTBjbmt4R1RBWEJnTlZCQWdURUZOMFlYUmxJRzltSUVOc2RYTjBaWEl4RXpBUkJnTlZCQWNUQ2sxNUlFTnMNCmRYTjBaWEl4RGpBTUJnTlZCQW9UQlUxNVQzSm5NUk13RVFZRFZRUUxFd3BMZFdKbGNtNWxkR1Z6TVN3d0tnWUQNClZRUURFeU52Y0dWdWRXNXBjMjl1TFc5eVkyaGxjM1J5WVM1dmNHVnVkVzVwYzI5dUxuTjJZekNDQVNJd0RRWUoNCktvWklodmNOQVFFQkJRQURnZ0VQQURDQ0FRb0NnZ0VCQUt0WW5Pd05wejhyNXNBQWVDRVcwaUM1WmcyNGoxMDINCjlvcFRMSFE2S3RzK0xVZlI4ekV4VFJncG54V1hIbjRTbitKcHl5d01tdktRU3hmT3lCak1nNmlvcDlNZXQ2b1QNCkhWNTlLb0lzM2t6bitFeHFvd0JoeVRyOGFmL3NZb1pXdTlrcXkxWmErcEgzQXpiSWdIM2JjNllGQkQrak8yWDENCmNtSXdCOXFFbytRU2IvOURQVE1tU0tvbGZCdndha1ZVME1lYUwwbGlYUVNlZG5yNHZvZ20xRWR3Y1hRWkxheXANCkVadUVmTDBySVY1bTJiMzhncWYrcnNTSU9QT0RNVWN2VFpmSnQxczZWK2xTTXA2ZVp6TG9GMlF5MVViOHhBQUkNCldYb3hWOXVMdXFFb1FxZEpKTWI3b0ZGVUUvTmpodkVoV0E0c3ljQ3A5Yk1qVi9YMUp2QXlzQTBDQXdFQUFhTm4NCk1HVXdEd1lEVlIwVEFRSC9CQVV3QXdFQi96QU9CZ05WSFE4QkFmOEVCQU1DQWdRd0VnWURWUjBsQVFIL0JBZ3cNCkJnWUVWUjBsQURBdUJnTlZIUkVFSnpBbGdpTnZjR1Z1ZFc1cGMyOXVMVzl5WTJobGMzUnlZUzV2Y0dWdWRXNXANCmMyOXVMbk4yWXpBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQWJ6dzlqV09tci9LMmdJdGdpVkd3UGFYRmNJZHMNCjNiamdvVkxYREJkVTFKK3lidm5EVnJEa2owNTlPRzVBOXhRTzEzWVEvbGIreVJNckEwZTdCWEVSR3oxZVlwZmsNCkZoczhCb3QrcENSRVlNMTU3cEtvOUpiN09FTVA4S0FET2xxMFpHYitqN2Zac0NSWlhSbzk5QUpmMms4R0s2WVoNCnFGZE43c1BXUnZXcDRBK2RRbVdPa1RKUVFhdVp5N1lvU1JROUFnSkxvdUxqbzd4QjdLM1hwTXBkNFl0UzBYd1kNClJxV0dreGh6eGtDaWJTZFhrSUFGSkZxc0pZVHFTdHQ4ZXdZaUQyL1Zob3ozcjJjZC8vcXZIWXljL1U5Zm9zM3UNCmR5R1NPWGhnS2pJSTRQblovOS9kemJDWFc0dlFFUVJEaENTTHpmSk5KS3NmMkt2aUNmM3BHa2tHNmc9PQ0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="
+  admissionReviewVersions: ["v1"]
+  sideEffects: None
+  timeoutSeconds: 30
+- name: "applications-openunison.tremolo.io"
+  rules:
+  - apiGroups:   ["openunison.tremolo.io"]
+    apiVersions: ["v1"]
+    operations:  ["CREATE","UPDATE"]
+    resources:   ["applications"]
+    scope:       "Namespaced"
+  namespaceSelector:
+    matchExpressions:
+    - key: kubernetes.io/metadata.name
+      operator: In
+      values: ["openunison"]
+  clientConfig:
+    service:
+      namespace: openunison
+      name: "openunison-orchestra"
+      path: /k8s/webhooks/v1/applications
+    caBundle: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUVGekNDQXYrZ0F3SUJBZ0lHQVhWWU5KTXhNQTBHQ1NxR1NJYjNEUUVCQ3dVQU1JR1hNUkl3RUFZRFZRUUcNCkV3bE5lVU52ZFc1MGNua3hHVEFYQmdOVkJBZ1RFRk4wWVhSbElHOW1JRU5zZFhOMFpYSXhFekFSQmdOVkJBY1QNCkNrMTVJRU5zZFhOMFpYSXhEakFNQmdOVkJBb1RCVTE1VDNKbk1STXdFUVlEVlFRTEV3cExkV0psY201bGRHVnoNCk1Td3dLZ1lEVlFRREV5TnZjR1Z1ZFc1cGMyOXVMVzl5WTJobGMzUnlZUzV2Y0dWdWRXNXBjMjl1TG5OMll6QWUNCkZ3MHlNREV3TWpRd01USTBNREZhRncweU1URXdNalF3TVRJME1ERmFNSUdYTVJJd0VBWURWUVFHRXdsTmVVTnYNCmRXNTBjbmt4R1RBWEJnTlZCQWdURUZOMFlYUmxJRzltSUVOc2RYTjBaWEl4RXpBUkJnTlZCQWNUQ2sxNUlFTnMNCmRYTjBaWEl4RGpBTUJnTlZCQW9UQlUxNVQzSm5NUk13RVFZRFZRUUxFd3BMZFdKbGNtNWxkR1Z6TVN3d0tnWUQNClZRUURFeU52Y0dWdWRXNXBjMjl1TFc5eVkyaGxjM1J5WVM1dmNHVnVkVzVwYzI5dUxuTjJZekNDQVNJd0RRWUoNCktvWklodmNOQVFFQkJRQURnZ0VQQURDQ0FRb0NnZ0VCQUt0WW5Pd05wejhyNXNBQWVDRVcwaUM1WmcyNGoxMDINCjlvcFRMSFE2S3RzK0xVZlI4ekV4VFJncG54V1hIbjRTbitKcHl5d01tdktRU3hmT3lCak1nNmlvcDlNZXQ2b1QNCkhWNTlLb0lzM2t6bitFeHFvd0JoeVRyOGFmL3NZb1pXdTlrcXkxWmErcEgzQXpiSWdIM2JjNllGQkQrak8yWDENCmNtSXdCOXFFbytRU2IvOURQVE1tU0tvbGZCdndha1ZVME1lYUwwbGlYUVNlZG5yNHZvZ20xRWR3Y1hRWkxheXANCkVadUVmTDBySVY1bTJiMzhncWYrcnNTSU9QT0RNVWN2VFpmSnQxczZWK2xTTXA2ZVp6TG9GMlF5MVViOHhBQUkNCldYb3hWOXVMdXFFb1FxZEpKTWI3b0ZGVUUvTmpodkVoV0E0c3ljQ3A5Yk1qVi9YMUp2QXlzQTBDQXdFQUFhTm4NCk1HVXdEd1lEVlIwVEFRSC9CQVV3QXdFQi96QU9CZ05WSFE4QkFmOEVCQU1DQWdRd0VnWURWUjBsQVFIL0JBZ3cNCkJnWUVWUjBsQURBdUJnTlZIUkVFSnpBbGdpTnZjR1Z1ZFc1cGMyOXVMVzl5WTJobGMzUnlZUzV2Y0dWdWRXNXANCmMyOXVMbk4yWXpBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQWJ6dzlqV09tci9LMmdJdGdpVkd3UGFYRmNJZHMNCjNiamdvVkxYREJkVTFKK3lidm5EVnJEa2owNTlPRzVBOXhRTzEzWVEvbGIreVJNckEwZTdCWEVSR3oxZVlwZmsNCkZoczhCb3QrcENSRVlNMTU3cEtvOUpiN09FTVA4S0FET2xxMFpHYitqN2Zac0NSWlhSbzk5QUpmMms4R0s2WVoNCnFGZE43c1BXUnZXcDRBK2RRbVdPa1RKUVFhdVp5N1lvU1JROUFnSkxvdUxqbzd4QjdLM1hwTXBkNFl0UzBYd1kNClJxV0dreGh6eGtDaWJTZFhrSUFGSkZxc0pZVHFTdHQ4ZXdZaUQyL1Zob3ozcjJjZC8vcXZIWXljL1U5Zm9zM3UNCmR5R1NPWGhnS2pJSTRQblovOS9kemJDWFc0dlFFUVJEaENTTHpmSk5KS3NmMkt2aUNmM3BHa2tHNmc9PQ0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="
+  admissionReviewVersions: ["v1"]
+  sideEffects: None
+  timeoutSeconds: 30
+

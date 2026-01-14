@@ -15,7 +15,7 @@ orchestra:
 
   github:
     client_id: Ov23lir4dVXFt65rX15x
-    teams: ChapChap/
+    teams: theodo-cloud
 
   trusted_certs:
   - name: k8s_master

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+  <Appenders>
+    <Console name="STDOUT" target="SYSTEM_OUT">
+      <PatternLayout pattern="[%d][%t] %-5p %c{1} - %m%n"/>
+    </Console>
+  </Appenders>
+
+  <Loggers>
+    <!-- Root -->
+    <Root level="INFO">
+      <AppenderRef ref="STDOUT"/>
+    </Root>
+
+    <!-- OpenUnison / auth -->
+    <Logger name="com.tremolosecurity" level="DEBUG" additivity="false">
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <Logger name="com.tremolosecurity.proxy.auth.GithubAuthMech" level="TRACE" additivity="false">
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+    <Logger name="com.tremolosecurity.proxy.auth.oauth2" level="DEBUG" additivity="false">
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+
+    <!-- MyVD si besoin -->
+    <Logger name="net.sourceforge.myvd" level="INFO" additivity="false">
+      <AppenderRef ref="STDOUT"/>
+    </Logger>
+  </Loggers>
+</Configuration>

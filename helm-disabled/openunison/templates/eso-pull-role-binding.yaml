@@ -1,0 +1,67 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: eso-read-openunison-secrets
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: eso-read-openunison-secrets
+subjects:
+  - kind: ServiceAccount
+    name: eso-k8s-provider
+    namespace: external-secrets
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: eso-read-openunison-secrets
+---
+apiVersion: external-secrets.io/v1
+kind: ClusterSecretStore
+metadata:
+  name: k8s-secrets
+spec:
+  provider:
+    kubernetes:
+      remoteNamespace: openunison
+      server:
+        url: https://kubernetes.default.svc
+        caProvider:
+          type: ConfigMap
+          name: kube-root-ca.crt
+          key: ca.crt
+          namespace: external-secrets
+      auth:
+        serviceAccount:
+          name: eso-k8s-provider
+          namespace: external-secrets
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: ou-kube-proxy-certificate
+  namespace: openunison
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: k8s-secrets
+    kind: ClusterSecretStore
+
+  target:
+    name: ou-kube-proxy-certificate
+    creationPolicy: Owner
+    template:
+      type: Opaque
+      data:
+        ca.crt: "{{ .unison_ca_pem }}"
+
+  data:
+    - secretKey: unison_ca_pem
+      remoteRef:
+        key: root-secret
+        property: ca.crt

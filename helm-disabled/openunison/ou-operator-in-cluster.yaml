@@ -1,0 +1,4151 @@
+---
+# Source: openunison-operator/templates/serviceaccounts/openunison-operator.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: openunison-operator
+  namespace: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: endsessions.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                dn:
+                  type: string
+  conversion:
+    strategy: None
+  scope: Namespaced
+  names:
+    plural: endsessions
+    singular: endsession
+    kind: EndSession
+    shortNames:
+      - es
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: users.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                sub:
+                  type: string
+                groups:
+                  type: array
+                  items:
+                    type: string
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                email:
+                  type: string
+                uid:
+                  type: string
+  conversion:
+    strategy: None
+  scope: Namespaced
+  names:
+    plural: users
+    singular: user
+    kind: User
+    shortNames:
+      - usr
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: oidc-sessions.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: false
+      schema:
+        # openAPIV3Schema is the schema for validating custom objects.
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                session_id:
+                  type: string
+                client_id:
+                  type: string
+                encrypted_id_token:
+                  type: string
+                encrypted_access_token:
+                  type: string
+                expires:
+                  type: string
+                user_dn:
+                  type: string
+                refresh_token:
+                  type: string
+    - name: v2
+      served: true
+      storage: true
+      schema:
+        # openAPIV3Schema is the schema for validating custom objects.
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                session_id:
+                  type: string
+                client_id:
+                  type: string
+                encrypted_id_token:
+                  type: string
+                encrypted_access_token:
+                  type: string
+                expires:
+                  type: string
+                user_dn:
+                  type: string
+                refresh_token:
+                  type: string
+                expired_tokens:
+                  type: string
+  scope: Namespaced
+  names:
+    plural: oidc-sessions
+    singular: oidc-session
+    kind: OidcSession
+    shortNames:
+      - oidc
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: openunisons.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: false
+      subresources:
+        status: {}
+      schema:
+        # openAPIV3Schema is the schema for validating custom objects.
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                image:
+                  type: string
+                replicas:
+                  type: integer
+                enable_activemq:
+                  type: boolean
+                activemq_image:
+                  type: string
+                dest_secret:
+                  type: string
+                source_secret:
+                  type: string
+                secret_data:
+                  type: array
+                  items:
+                    type: string
+                openshift:
+                  type: object
+                  properties:
+                    git:
+                      type: object
+                      properties:
+                        repo:
+                          type: string
+                        branch:
+                          type: string
+                        dir:
+                          type: string
+                    builder_image:
+                      type: string
+                hosts:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      names:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            env_var:
+                              type: string
+                      ingress_name:
+                        type: string
+                      secret_name:
+                        type: string
+                      node_selectors:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            value:
+                              type: string
+                non_secret_data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      value:
+                        type: string
+                openunison_network_configuration:
+                  type: object
+                  properties:
+                    force_to_lower_case:
+                      type: boolean
+                    open_port:
+                      type: integer
+                    open_external_port:
+                      type: integer
+                    secure_port:
+                      type: integer
+                    secure_external_port:
+                      type: integer
+                    force_to_secure:
+                      type: boolean
+                    activemq_dir:
+                      type: string
+                    client_auth:
+                      type: string
+                    allowed_client_names:
+                      type: array
+                      items:
+                        type: string
+                    ciphers:
+                      type: array
+                      items:
+                        type: string
+                    path_to_deployment:
+                      type: string
+                    path_to_env_file:
+                      type: string
+                    secure_key_alias:
+                      type: string
+                    allowed_tls_protocols:
+                      type: array
+                      items:
+                        type: string
+                    quartz_dir:
+                      type: string
+                    context_root:
+                      type: string
+                    disable_http2:
+                      type: boolean
+                    allow_un_escaped_chars:
+                      type: string
+                    welecome_pages:
+                      type: array
+                      items:
+                        type: string
+                    error_pages:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          code:
+                            type: integer
+                          location:
+                            type: string
+                    redirect_to_context_root:
+                      type: boolean
+                saml_remote_idp:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      source:
+                        type: object
+                        properties:
+                          url:
+                            type: string
+                          xml:
+                            type: string
+                      mapping:
+                        type: object
+                        properties:
+                          entity_id:
+                            type: string
+                          post_url:
+                            type: string
+                          redirect_url:
+                            type: string
+                          logout_url:
+                            type: string
+                          signing_cert_alias:
+                            type: string
+                          encryption_cert_alias:
+                            type: string
+                run_sql:
+                  type: string
+                key_store:
+                  type: object
+                  properties:
+                    update_controller:
+                      type: object
+                      properties:
+                        image:
+                          type: string
+                        schedule:
+                          type: string
+                        days_to_expire:
+                          type: integer
+                    static_keys:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          version:
+                            type: integer
+                    trusted_certificates:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          pem_data:
+                            type: string
+                    key_pairs:
+                      type: object
+                      properties:
+                        create_keypair_template:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              value:
+                                type: string
+                        keys:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              tls_secret_name:
+                                type: string
+                              import_into_ks:
+                                type: string
+                                enum:
+                                  - keypair
+                                  - certificate
+                                  - none
+                              replace_if_exists:
+                                type: boolean
+                              create_data:
+                                type: object
+                                properties:
+                                  target_namespace:
+                                    type: string
+                                  sign_by_k8s_ca:
+                                    type: boolean
+                                  server_name:
+                                    type: string
+                                  subject_alternative_names:
+                                    type: array
+                                    items:
+                                      type: string
+                                  key_size:
+                                    type: integer
+                                  ca_cert:
+                                    type: boolean
+                                  delete_pods_labels:
+                                    type: array
+                                    items:
+                                      type: string
+                                  secret_info:
+                                    type: object
+                                    properties:
+                                      type_of_secret:
+                                        type: string
+                                      cert_name:
+                                        type: string
+                                      key_name:
+                                        type: string
+            status:
+              type: object
+              properties:
+                conditions:
+                  properties:
+                    lastTransitionTime:
+                      type: string
+                    status:
+                      type: string
+                    type:
+                      type: string
+                  type: object
+                digest:
+                  type: string
+                idpCertificateFingerprints:
+                  type: object
+                  additionalProperties: true
+    - name: v2
+      served: true
+      storage: false
+      subresources:
+        status: {}
+      schema:
+        # openAPIV3Schema is the schema for validating custom objects.
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                image:
+                  type: string
+                replicas:
+                  type: integer
+                enable_activemq:
+                  type: boolean
+                activemq_image:
+                  type: string
+                dest_secret:
+                  type: string
+                source_secret:
+                  type: string
+                secret_data:
+                  type: array
+                  items:
+                    type: string
+                openshift:
+                  type: object
+                  properties:
+                    git:
+                      type: object
+                      properties:
+                        repo:
+                          type: string
+                        branch:
+                          type: string
+                        dir:
+                          type: string
+                    builder_image:
+                      type: string
+                hosts:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      names:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            env_var:
+                              type: string
+                      ingress_name:
+                        type: string
+                      ingress_type:
+                        type: string
+                      secret_name:
+                        type: string
+                      annotations:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            value:
+                              type: string
+                deployment_data:
+                  type: object
+                  properties:
+                    tokenrequest_api:
+                      type: object
+                      properties:
+                        enabled:
+                          type: boolean
+                        audience:
+                          type: string
+                        expirationSeconds:
+                          type: integer
+                    readiness_probe_command:
+                      type: array
+                      items:
+                        type: string
+                    liveness_probe_command:
+                      type: array
+                      items:
+                        type: string
+                    node_selectors:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          value:
+                            type: string
+                    pull_secret:
+                      type: string
+                    resources:
+                      type: object
+                      properties:
+                        requests:
+                          type: object
+                          properties:
+                            memory:
+                              type: string
+                            cpu:
+                              type: string
+                        limits:
+                          type: object
+                          properties:
+                            memory:
+                              type: string
+                            cpu:
+                              type: string
+
+                non_secret_data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      value:
+                        type: string
+                openunison_network_configuration:
+                  type: object
+                  properties:
+                    force_to_lower_case:
+                      type: boolean
+                    open_port:
+                      type: integer
+                    open_external_port:
+                      type: integer
+                    secure_port:
+                      type: integer
+                    secure_external_port:
+                      type: integer
+                    force_to_secure:
+                      type: boolean
+                    activemq_dir:
+                      type: string
+                    client_auth:
+                      type: string
+                    allowed_client_names:
+                      type: array
+                      items:
+                        type: string
+                    ciphers:
+                      type: array
+                      items:
+                        type: string
+                    path_to_deployment:
+                      type: string
+                    path_to_env_file:
+                      type: string
+                    secure_key_alias:
+                      type: string
+                    allowed_tls_protocols:
+                      type: array
+                      items:
+                        type: string
+                    quartz_dir:
+                      type: string
+                    context_root:
+                      type: string
+                    disable_http2:
+                      type: boolean
+                    allow_un_escaped_chars:
+                      type: string
+                    welecome_pages:
+                      type: array
+                      items:
+                        type: string
+                    error_pages:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          code:
+                            type: integer
+                          location:
+                            type: string
+                    redirect_to_context_root:
+                      type: boolean
+                saml_remote_idp:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      source:
+                        type: object
+                        properties:
+                          url:
+                            type: string
+                          xml:
+                            type: string
+                      mapping:
+                        type: object
+                        properties:
+                          entity_id:
+                            type: string
+                          post_url:
+                            type: string
+                          redirect_url:
+                            type: string
+                          logout_url:
+                            type: string
+                          signing_cert_alias:
+                            type: string
+                          encryption_cert_alias:
+                            type: string
+                run_sql:
+                  type: string
+                key_store:
+                  type: object
+                  properties:
+                    update_controller:
+                      type: object
+                      properties:
+                        image:
+                          type: string
+                        schedule:
+                          type: string
+                        days_to_expire:
+                          type: integer
+                    static_keys:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          version:
+                            type: integer
+                    trusted_certificates:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          pem_data:
+                            type: string
+                    key_pairs:
+                      type: object
+                      properties:
+                        create_keypair_template:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              value:
+                                type: string
+                        keys:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              tls_secret_name:
+                                type: string
+                              import_into_ks:
+                                type: string
+                                enum:
+                                  - keypair
+                                  - certificate
+                                  - none
+                              replace_if_exists:
+                                type: boolean
+                              create_data:
+                                type: object
+                                properties:
+                                  target_namespace:
+                                    type: string
+                                  sign_by_k8s_ca:
+                                    type: boolean
+                                  server_name:
+                                    type: string
+                                  subject_alternative_names:
+                                    type: array
+                                    items:
+                                      type: string
+                                  key_size:
+                                    type: integer
+                                  ca_cert:
+                                    type: boolean
+                                  delete_pods_labels:
+                                    type: array
+                                    items:
+                                      type: string
+                                  patch_info:
+                                    type: object
+                                    properties:
+                                      url:
+                                        type: string
+                                      annotation_name:
+                                        type: string
+                                  secret_info:
+                                    type: object
+                                    properties:
+                                      type_of_secret:
+                                        type: string
+                                      cert_name:
+                                        type: string
+                                      key_name:
+                                        type: string
+            status:
+              type: object
+              properties:
+                conditions:
+                  properties:
+                    lastTransitionTime:
+                      type: string
+                    status:
+                      type: string
+                    type:
+                      type: string
+                  type: object
+                digest:
+                  type: string
+                idpCertificateFingerprints:
+                  type: object
+                  additionalProperties: true
+    - name: v3
+      served: true
+      storage: false
+      subresources:
+        status: {}
+      schema:
+        # openAPIV3Schema is the schema for validating custom objects.
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                image:
+                  type: string
+                replicas:
+                  type: integer
+                enable_activemq:
+                  type: boolean
+                activemq_image:
+                  type: string
+                dest_secret:
+                  type: string
+                source_secret:
+                  type: string
+                secret_data:
+                  type: array
+                  items:
+                    type: string
+                openshift:
+                  type: object
+                  properties:
+                    git:
+                      type: object
+                      properties:
+                        repo:
+                          type: string
+                        branch:
+                          type: string
+                        dir:
+                          type: string
+                    builder_image:
+                      type: string
+                hosts:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      names:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            env_var:
+                              type: string
+                      ingress_name:
+                        type: string
+                      ingress_type:
+                        type: string
+                      secret_name:
+                        type: string
+                      annotations:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            value:
+                              type: string
+                deployment_data:
+                  type: object
+                  properties:
+                    tokenrequest_api:
+                      type: object
+                      properties:
+                        enabled:
+                          type: boolean
+                        audience:
+                          type: string
+                        expirationSeconds:
+                          type: integer
+                    readiness_probe_command:
+                      type: array
+                      items:
+                        type: string
+                    liveness_probe_command:
+                      type: array
+                      items:
+                        type: string
+                    node_selectors:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          value:
+                            type: string
+                    pull_secret:
+                      type: string
+                    resources:
+                      type: object
+                      properties:
+                        requests:
+                          type: object
+                          properties:
+                            memory:
+                              type: string
+                            cpu:
+                              type: string
+                        limits:
+                          type: object
+                          properties:
+                            memory:
+                              type: string
+                            cpu:
+                              type: string
+
+                non_secret_data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      value:
+                        type: string
+                openunison_network_configuration:
+                  type: object
+                  properties:
+                    force_to_lower_case:
+                      type: boolean
+                    open_port:
+                      type: integer
+                    open_external_port:
+                      type: integer
+                    secure_port:
+                      type: integer
+                    secure_external_port:
+                      type: integer
+                    ldap_port:
+                      type: integer
+                    ldaps_port:
+                      type: integer
+                    ldaps_key_name:
+                      type: string
+                    force_to_secure:
+                      type: boolean
+                    activemq_dir:
+                      type: string
+                    client_auth:
+                      type: string
+                    allowed_client_names:
+                      type: array
+                      items:
+                        type: string
+                    ciphers:
+                      type: array
+                      items:
+                        type: string
+                    path_to_deployment:
+                      type: string
+                    path_to_env_file:
+                      type: string
+                    secure_key_alias:
+                      type: string
+                    allowed_tls_protocols:
+                      type: array
+                      items:
+                        type: string
+                    quartz_dir:
+                      type: string
+                    context_root:
+                      type: string
+                    disable_http2:
+                      type: boolean
+                    allow_un_escaped_chars:
+                      type: string
+                    welecome_pages:
+                      type: array
+                      items:
+                        type: string
+                    error_pages:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          code:
+                            type: integer
+                          location:
+                            type: string
+                    redirect_to_context_root:
+                      type: boolean
+                saml_remote_idp:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      source:
+                        type: object
+                        properties:
+                          url:
+                            type: string
+                          xml:
+                            type: string
+                      mapping:
+                        type: object
+                        properties:
+                          entity_id:
+                            type: string
+                          post_url:
+                            type: string
+                          redirect_url:
+                            type: string
+                          logout_url:
+                            type: string
+                          signing_cert_alias:
+                            type: string
+                          encryption_cert_alias:
+                            type: string
+                run_sql:
+                  type: string
+                key_store:
+                  type: object
+                  properties:
+                    update_controller:
+                      type: object
+                      properties:
+                        image:
+                          type: string
+                        schedule:
+                          type: string
+                        days_to_expire:
+                          type: integer
+                    static_keys:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          version:
+                            type: integer
+                    trusted_certificates:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          pem_data:
+                            type: string
+                    key_pairs:
+                      type: object
+                      properties:
+                        create_keypair_template:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              value:
+                                type: string
+                        keys:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              tls_secret_name:
+                                type: string
+                              import_into_ks:
+                                type: string
+                                enum:
+                                  - keypair
+                                  - certificate
+                                  - none
+                              replace_if_exists:
+                                type: boolean
+                              create_data:
+                                type: object
+                                properties:
+                                  target_namespace:
+                                    type: string
+                                  sign_by_k8s_ca:
+                                    type: boolean
+                                  server_name:
+                                    type: string
+                                  subject_alternative_names:
+                                    type: array
+                                    items:
+                                      type: string
+                                  key_size:
+                                    type: integer
+                                  ca_cert:
+                                    type: boolean
+                                  delete_pods_labels:
+                                    type: array
+                                    items:
+                                      type: string
+                                  patch_info:
+                                    type: object
+                                    properties:
+                                      url:
+                                        type: string
+                                      annotation_name:
+                                        type: string
+                                  secret_info:
+                                    type: object
+                                    properties:
+                                      type_of_secret:
+                                        type: string
+                                      cert_name:
+                                        type: string
+                                      key_name:
+                                        type: string
+            status:
+              type: object
+              properties:
+                conditions:
+                  properties:
+                    lastTransitionTime:
+                      type: string
+                    status:
+                      type: string
+                    type:
+                      type: string
+                  type: object
+                digest:
+                  type: string
+                idpCertificateFingerprints:
+                  type: object
+                  additionalProperties: true
+    - name: v4
+      served: true
+      storage: false
+      subresources:
+        status: {}
+      schema:
+        # openAPIV3Schema is the schema for validating custom objects.
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                image:
+                  type: string
+                replicas:
+                  type: integer
+                enable_activemq:
+                  type: boolean
+                activemq_image:
+                  type: string
+                dest_secret:
+                  type: string
+                source_secret:
+                  type: string
+                secret_data:
+                  type: array
+                  items:
+                    type: string
+                openshift:
+                  type: object
+                  properties:
+                    git:
+                      type: object
+                      properties:
+                        repo:
+                          type: string
+                        branch:
+                          type: string
+                        dir:
+                          type: string
+                    builder_image:
+                      type: string
+                hosts:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      names:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            service_name:
+                              type: string
+                            env_var:
+                              type: string
+                      ingress_name:
+                        type: string
+                      ingress_type:
+                        type: string
+                      secret_name:
+                        type: string
+                      annotations:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            value:
+                              type: string
+                deployment_data:
+                  type: object
+                  properties:
+                    tokenrequest_api:
+                      type: object
+                      properties:
+                        enabled:
+                          type: boolean
+                        audience:
+                          type: string
+                        expirationSeconds:
+                          type: integer
+                    readiness_probe_command:
+                      type: array
+                      items:
+                        type: string
+                    liveness_probe_command:
+                      type: array
+                      items:
+                        type: string
+                    node_selectors:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          value:
+                            type: string
+                    pull_secret:
+                      type: string
+                    resources:
+                      type: object
+                      properties:
+                        requests:
+                          type: object
+                          properties:
+                            memory:
+                              type: string
+                            cpu:
+                              type: string
+                        limits:
+                          type: object
+                          properties:
+                            memory:
+                              type: string
+                            cpu:
+                              type: string
+
+                non_secret_data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      value:
+                        type: string
+                openunison_network_configuration:
+                  type: object
+                  properties:
+                    force_to_lower_case:
+                      type: boolean
+                    open_port:
+                      type: integer
+                    open_external_port:
+                      type: integer
+                    secure_port:
+                      type: integer
+                    secure_external_port:
+                      type: integer
+                    ldap_port:
+                      type: integer
+                    ldaps_port:
+                      type: integer
+                    ldaps_key_name:
+                      type: string
+                    force_to_secure:
+                      type: boolean
+                    activemq_dir:
+                      type: string
+                    client_auth:
+                      type: string
+                    allowed_client_names:
+                      type: array
+                      items:
+                        type: string
+                    ciphers:
+                      type: array
+                      items:
+                        type: string
+                    path_to_deployment:
+                      type: string
+                    path_to_env_file:
+                      type: string
+                    secure_key_alias:
+                      type: string
+                    allowed_tls_protocols:
+                      type: array
+                      items:
+                        type: string
+                    quartz_dir:
+                      type: string
+                    context_root:
+                      type: string
+                    disable_http2:
+                      type: boolean
+                    allow_un_escaped_chars:
+                      type: string
+                    welecome_pages:
+                      type: array
+                      items:
+                        type: string
+                    error_pages:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          code:
+                            type: integer
+                          location:
+                            type: string
+                    redirect_to_context_root:
+                      type: boolean
+                saml_remote_idp:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      source:
+                        type: object
+                        properties:
+                          url:
+                            type: string
+                          xml:
+                            type: string
+                      mapping:
+                        type: object
+                        properties:
+                          entity_id:
+                            type: string
+                          post_url:
+                            type: string
+                          redirect_url:
+                            type: string
+                          logout_url:
+                            type: string
+                          signing_cert_alias:
+                            type: string
+                          encryption_cert_alias:
+                            type: string
+                run_sql:
+                  type: string
+                key_store:
+                  type: object
+                  properties:
+                    update_controller:
+                      type: object
+                      properties:
+                        image:
+                          type: string
+                        schedule:
+                          type: string
+                        days_to_expire:
+                          type: integer
+                    static_keys:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          version:
+                            type: integer
+                    trusted_certificates:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          pem_data:
+                            type: string
+                    key_pairs:
+                      type: object
+                      properties:
+                        create_keypair_template:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              value:
+                                type: string
+                        keys:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              tls_secret_name:
+                                type: string
+                              import_into_ks:
+                                type: string
+                                enum:
+                                  - keypair
+                                  - certificate
+                                  - none
+                              replace_if_exists:
+                                type: boolean
+                              create_data:
+                                type: object
+                                properties:
+                                  target_namespace:
+                                    type: string
+                                  sign_by_k8s_ca:
+                                    type: boolean
+                                  server_name:
+                                    type: string
+                                  subject_alternative_names:
+                                    type: array
+                                    items:
+                                      type: string
+                                  key_size:
+                                    type: integer
+                                  ca_cert:
+                                    type: boolean
+                                  delete_pods_labels:
+                                    type: array
+                                    items:
+                                      type: string
+                                  patch_info:
+                                    type: object
+                                    properties:
+                                      url:
+                                        type: string
+                                      annotation_name:
+                                        type: string
+                                  secret_info:
+                                    type: object
+                                    properties:
+                                      type_of_secret:
+                                        type: string
+                                      cert_name:
+                                        type: string
+                                      key_name:
+                                        type: string
+            status:
+              type: object
+              properties:
+                conditions:
+                  properties:
+                    lastTransitionTime:
+                      type: string
+                    status:
+                      type: string
+                    type:
+                      type: string
+                  type: object
+                digest:
+                  type: string
+                idpCertificateFingerprints:
+                  type: object
+                  additionalProperties: true
+    - name: v5
+      served: true
+      storage: false
+      subresources:
+        status: {}
+      schema:
+        # openAPIV3Schema is the schema for validating custom objects.
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                image:
+                  type: string
+                replicas:
+                  type: integer
+                enable_activemq:
+                  type: boolean
+                activemq_image:
+                  type: string
+                dest_secret:
+                  type: string
+                source_secret:
+                  type: string
+                secret_data:
+                  type: array
+                  items:
+                    type: string
+                myvd_configmap:
+                  type: string
+                openshift:
+                  type: object
+                  properties:
+                    git:
+                      type: object
+                      properties:
+                        repo:
+                          type: string
+                        branch:
+                          type: string
+                        dir:
+                          type: string
+                    builder_image:
+                      type: string
+                hosts:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      names:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            service_name:
+                              type: string
+                            env_var:
+                              type: string
+                      ingress_name:
+                        type: string
+                      ingress_type:
+                        type: string
+                      secret_name:
+                        type: string
+                      annotations:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            value:
+                              type: string
+                deployment_data:
+                  type: object
+                  properties:
+                    tokenrequest_api:
+                      type: object
+                      properties:
+                        enabled:
+                          type: boolean
+                        audience:
+                          type: string
+                        expirationSeconds:
+                          type: integer
+                    readiness_probe_command:
+                      type: array
+                      items:
+                        type: string
+                    liveness_probe_command:
+                      type: array
+                      items:
+                        type: string
+                    node_selectors:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          value:
+                            type: string
+                    pull_secret:
+                      type: string
+                    resources:
+                      type: object
+                      properties:
+                        requests:
+                          type: object
+                          properties:
+                            memory:
+                              type: string
+                            cpu:
+                              type: string
+                        limits:
+                          type: object
+                          properties:
+                            memory:
+                              type: string
+                            cpu:
+                              type: string
+
+                non_secret_data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      value:
+                        type: string
+                openunison_network_configuration:
+                  type: object
+                  properties:
+                    force_to_lower_case:
+                      type: boolean
+                    open_port:
+                      type: integer
+                    open_external_port:
+                      type: integer
+                    secure_port:
+                      type: integer
+                    secure_external_port:
+                      type: integer
+                    ldap_port:
+                      type: integer
+                    ldaps_port:
+                      type: integer
+                    ldaps_key_name:
+                      type: string
+                    force_to_secure:
+                      type: boolean
+                    activemq_dir:
+                      type: string
+                    client_auth:
+                      type: string
+                    allowed_client_names:
+                      type: array
+                      items:
+                        type: string
+                    ciphers:
+                      type: array
+                      items:
+                        type: string
+                    path_to_deployment:
+                      type: string
+                    path_to_env_file:
+                      type: string
+                    secure_key_alias:
+                      type: string
+                    allowed_tls_protocols:
+                      type: array
+                      items:
+                        type: string
+                    quartz_dir:
+                      type: string
+                    context_root:
+                      type: string
+                    disable_http2:
+                      type: boolean
+                    allow_un_escaped_chars:
+                      type: string
+                    welecome_pages:
+                      type: array
+                      items:
+                        type: string
+                    error_pages:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          code:
+                            type: integer
+                          location:
+                            type: string
+                    redirect_to_context_root:
+                      type: boolean
+                    queue_configuration:
+                      type: object
+                      properties:
+                        use_internal_queue:
+                          type: boolean
+                        max_producers:
+                          type: integer
+                        connection_factory:
+                          type: string
+                        max_consumers:
+                          type: integer
+                        max_sessions_per_connection:
+                          type: integer
+                        task_queue_name:
+                          type: string
+                        smtp_queue_name:
+                          type: string
+                        encryption_key_name:
+                          type: string
+                        num_queues:
+                          type: integer
+                        multi_task_queues:
+                          type: boolean
+                        keep_alive_millis:
+                          type: integer
+                        params:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              source_type:
+                                type: string
+                                enum:
+                                  - static
+                                  - environment
+                              value:
+                                type: string
+                saml_remote_idp:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      source:
+                        type: object
+                        properties:
+                          url:
+                            type: string
+                          xml:
+                            type: string
+                      mapping:
+                        type: object
+                        properties:
+                          entity_id:
+                            type: string
+                          post_url:
+                            type: string
+                          redirect_url:
+                            type: string
+                          logout_url:
+                            type: string
+                          signing_cert_alias:
+                            type: string
+                          encryption_cert_alias:
+                            type: string
+                run_sql:
+                  type: string
+                key_store:
+                  type: object
+                  properties:
+                    update_controller:
+                      type: object
+                      properties:
+                        image:
+                          type: string
+                        schedule:
+                          type: string
+                        days_to_expire:
+                          type: integer
+                    static_keys:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          version:
+                            type: integer
+                    trusted_certificates:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          pem_data:
+                            type: string
+                    key_pairs:
+                      type: object
+                      properties:
+                        create_keypair_template:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              value:
+                                type: string
+                        keys:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              tls_secret_name:
+                                type: string
+                              import_into_ks:
+                                type: string
+                                enum:
+                                  - keypair
+                                  - certificate
+                                  - none
+                              replace_if_exists:
+                                type: boolean
+                              create_data:
+                                type: object
+                                properties:
+                                  target_namespace:
+                                    type: string
+                                  sign_by_k8s_ca:
+                                    type: boolean
+                                  server_name:
+                                    type: string
+                                  subject_alternative_names:
+                                    type: array
+                                    items:
+                                      type: string
+                                  key_size:
+                                    type: integer
+                                  ca_cert:
+                                    type: boolean
+                                  delete_pods_labels:
+                                    type: array
+                                    items:
+                                      type: string
+                                  patch_info:
+                                    type: object
+                                    properties:
+                                      url:
+                                        type: string
+                                      annotation_name:
+                                        type: string
+                                  secret_info:
+                                    type: object
+                                    properties:
+                                      type_of_secret:
+                                        type: string
+                                      cert_name:
+                                        type: string
+                                      key_name:
+                                        type: string
+            status:
+              type: object
+              properties:
+                conditions:
+                  properties:
+                    lastTransitionTime:
+                      type: string
+                    status:
+                      type: string
+                    type:
+                      type: string
+                  type: object
+                digest:
+                  type: string
+                idpCertificateFingerprints:
+                  type: object
+                  additionalProperties: true
+    - name: v6
+      served: true
+      storage: true
+      subresources:
+        status: {}
+      schema:
+        # openAPIV3Schema is the schema for validating custom objects.
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                image:
+                  type: string
+                replicas:
+                  type: integer
+                enable_activemq:
+                  type: boolean
+                activemq_image:
+                  type: string
+                dest_secret:
+                  type: string
+                source_secret:
+                  type: string
+                secret_data:
+                  type: array
+                  items:
+                    type: string
+                myvd_configmap:
+                  type: string
+                openshift:
+                  type: object
+                  properties:
+                    git:
+                      type: object
+                      properties:
+                        repo:
+                          type: string
+                        branch:
+                          type: string
+                        dir:
+                          type: string
+                    builder_image:
+                      type: string
+                hosts:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      names:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            service_name:
+                              type: string
+                            env_var:
+                              type: string
+                      ingress_name:
+                        type: string
+                      ingress_type:
+                        type: string
+                      secret_name:
+                        type: string
+                      annotations:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            value:
+                              type: string
+                deployment_data:
+                  type: object
+                  properties:
+                    tokenrequest_api:
+                      type: object
+                      properties:
+                        enabled:
+                          type: boolean
+                        audience:
+                          type: string
+                        expirationSeconds:
+                          type: integer
+                    readiness_probe_command:
+                      type: array
+                      items:
+                        type: string
+                    liveness_probe_command:
+                      type: array
+                      items:
+                        type: string
+                    node_selectors:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          value:
+                            type: string
+                    pull_secret:
+                      type: string
+                    resources:
+                      type: object
+                      properties:
+                        requests:
+                          type: object
+                          properties:
+                            memory:
+                              type: string
+                            cpu:
+                              type: string
+                        limits:
+                          type: object
+                          properties:
+                            memory:
+                              type: string
+                            cpu:
+                              type: string
+
+                non_secret_data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      value:
+                        type: string
+                openunison_network_configuration:
+                  type: object
+                  properties:
+                    force_to_lower_case:
+                      type: boolean
+                    open_port:
+                      type: integer
+                    open_external_port:
+                      type: integer
+                    secure_port:
+                      type: integer
+                    secure_external_port:
+                      type: integer
+                    ldap_port:
+                      type: integer
+                    ldaps_port:
+                      type: integer
+                    ldaps_key_name:
+                      type: string
+                    force_to_secure:
+                      type: boolean
+                    activemq_dir:
+                      type: string
+                    client_auth:
+                      type: string
+                    allowed_client_names:
+                      type: array
+                      items:
+                        type: string
+                    ciphers:
+                      type: array
+                      items:
+                        type: string
+                    path_to_deployment:
+                      type: string
+                    path_to_env_file:
+                      type: string
+                    secure_key_alias:
+                      type: string
+                    allowed_tls_protocols:
+                      type: array
+                      items:
+                        type: string
+                    quartz_dir:
+                      type: string
+                    context_root:
+                      type: string
+                    disable_http2:
+                      type: boolean
+                    allow_un_escaped_chars:
+                      type: string
+                    welecome_pages:
+                      type: array
+                      items:
+                        type: string
+                    error_pages:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          code:
+                            type: integer
+                          location:
+                            type: string
+                    redirect_to_context_root:
+                      type: boolean
+                    queue_configuration:
+                      type: object
+                      properties:
+                        use_internal_queue:
+                          type: boolean
+                        max_producers:
+                          type: integer
+                        connection_factory:
+                          type: string
+                        max_consumers:
+                          type: integer
+                        max_sessions_per_connection:
+                          type: integer
+                        task_queue_name:
+                          type: string
+                        smtp_queue_name:
+                          type: string
+                        encryption_key_name:
+                          type: string
+                        num_queues:
+                          type: integer
+                        multi_task_queues:
+                          type: boolean
+                        keep_alive_millis:
+                          type: integer
+                        manual_dlq:
+                          type: boolean
+                        manual_dlq_max_attempts:
+                          type: integer
+                        manual_dlq_name:
+                          type: string
+                        params:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              source_type:
+                                type: string
+                                enum:
+                                  - static
+                                  - environment
+                              value:
+                                type: string
+                saml_remote_idp:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      source:
+                        type: object
+                        properties:
+                          url:
+                            type: string
+                          xml:
+                            type: string
+                      mapping:
+                        type: object
+                        properties:
+                          entity_id:
+                            type: string
+                          post_url:
+                            type: string
+                          redirect_url:
+                            type: string
+                          logout_url:
+                            type: string
+                          signing_cert_alias:
+                            type: string
+                          encryption_cert_alias:
+                            type: string
+                run_sql:
+                  type: string
+                sql_check_query:
+                  type: string
+                key_store:
+                  type: object
+                  properties:
+                    update_controller:
+                      type: object
+                      properties:
+                        image:
+                          type: string
+                        schedule:
+                          type: string
+                        days_to_expire:
+                          type: integer
+                    static_keys:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          version:
+                            type: integer
+                    trusted_certificates:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          pem_data:
+                            type: string
+                    key_pairs:
+                      type: object
+                      properties:
+                        create_keypair_template:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              value:
+                                type: string
+                        keys:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              tls_secret_name:
+                                type: string
+                              import_into_ks:
+                                type: string
+                                enum:
+                                  - keypair
+                                  - certificate
+                                  - none
+                              replace_if_exists:
+                                type: boolean
+                              create_data:
+                                type: object
+                                properties:
+                                  target_namespace:
+                                    type: string
+                                  sign_by_k8s_ca:
+                                    type: boolean
+                                  server_name:
+                                    type: string
+                                  subject_alternative_names:
+                                    type: array
+                                    items:
+                                      type: string
+                                  key_size:
+                                    type: integer
+                                  ca_cert:
+                                    type: boolean
+                                  delete_pods_labels:
+                                    type: array
+                                    items:
+                                      type: string
+                                  patch_info:
+                                    type: object
+                                    properties:
+                                      url:
+                                        type: string
+                                      annotation_name:
+                                        type: string
+                                  secret_info:
+                                    type: object
+                                    properties:
+                                      type_of_secret:
+                                        type: string
+                                      cert_name:
+                                        type: string
+                                      key_name:
+                                        type: string
+            status:
+              type: object
+              properties:
+                conditions:
+                  properties:
+                    lastTransitionTime:
+                      type: string
+                    status:
+                      type: string
+                    type:
+                      type: string
+                  type: object
+                digest:
+                  type: string
+                idpCertificateFingerprints:
+                  type: object
+                  additionalProperties: true
+
+  scope: Namespaced
+  names:
+    plural: openunisons
+    singular: openunison
+    kind: OpenUnison
+    shortNames:
+      - ou
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: trusts.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: Represents a dynamic trust for an identity provider
+          properties:
+            spec:
+              type: object
+              properties:
+                label:
+                  type: string
+                  description: A descriptive label for the trust
+                clientId:
+                  type: string
+                  description: A unique id for the trust shared with the trusted client
+                clientSecret:
+                  type: object
+                  description: A reference to the `Secret` used to store the secret shared between the identity provider and the client
+                  properties:
+                    secretName:
+                      type: string
+                      description: The name of the `Secret`
+                    keyName:
+                      type: string
+                      description: The key storing the data in the `Secret`
+                publicEndpoint:
+                  type: boolean
+                  description: If true, `clientSecret` is ignored
+                redirectURI:
+                  type: array
+                  description: List of allowed URLs that should be trusted to redirect to after successful authentication
+                  items:
+                    type: string
+                codeLastMileKeyName:
+                  type: string
+                  description: The name of the key in the OpenUnison keystore that is used to encryp the code portion of a transaction
+                authChainName:
+                  type: string
+                  description: The name of an `AuthenticationChain` that is used to authenticate this trust
+                codeTokenSkewMilis:
+                  type: integer
+                  description: The time, in milliseconds, to allow for clock skew when checking if a token has expired
+                accessTokenTimeToLive:
+                  type: integer
+                  description: The time, in miliseconds, that a trust's token should be valid
+                accessTokenSkewMillis:
+                  type: integer
+                  description: The time, in milliseconds, to allow for clock skew when checking if a token has expired
+                signedUserInfo:
+                  type: boolean
+                  description: If true, the `user_info` endpoint's response is a JWT, not simple JSON
+                verifyRedirect:
+                  type: boolean
+                  description: If true, verifies if the redirect is accurate.  Should only be false in development environments.
+                enableClientCredentialsGrant:
+                  type: boolean
+                  description: Optional.  If true, this client supports the client credentials grant
+                isSts:
+                  type: boolean
+                  description: Optional.  If true, the Trust is a Security Token Service (STS).
+                stsImpersonation:
+                  type: boolean
+                  description: Required for STS, determines if this STS supports impersonation
+                stsDelegation:
+                  type: boolean
+                  description: Required for STS, determines if this STS supports delegation
+                clientAzRules:
+                  type: array
+                  description: Required for STS, if the authenticated client is authorized to use this STS
+                  items:
+                    type: string
+                authorizedAudiences:
+                  type: array
+                  description: Required for STS, which clients this STS can delegate to
+                  items:
+                    type: string
+                subjectAzRules:
+                  type: array
+                  description: Required for STS, if the subject being impersonated is authorized to use this STS
+                  items:
+                    type: string
+                tokenCookieName:
+                  type: string
+                  description: Optional. If set, an encrypted cookie with the access_token's id that can be used with the com.tremolosecurity.proxy.auth.CheckTokenCookie authentication mechanism
+
+  scope: Namespaced
+  names:
+    plural: trusts
+    singular: trust
+    kind: Trust
+    shortNames:
+      - trust
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: portalurls.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: A PortalURL represents a "badge" in the OpenUnison portal
+          properties:
+            spec:
+              type: object
+              properties:
+                label:
+                  type: string
+                  description: A descriptive label for the badge
+                url:
+                  type: string
+                  description: The URL for the application a user will be sent to when clicking on the badge
+                org:
+                  type: string
+                  description: The `Orginaization.uuid` the url is a part of
+                icon:
+                  type: string
+                  description: A base64 encoded PNG that is 240px high x 210px wide
+                azRules:
+                  type: array
+                  description: "List of rules used to authorize access.  Authorization succeeds if **ANY** of these rules pass"
+                  items:
+                    type: object
+                    properties:
+                      scope:
+                        type: string
+                        enum:
+                          - group
+                          - dynamicGroup
+                          - dn
+                          - custom
+                          - filter
+                        description: |-
+                          One of:
+                          - `group` - The DN of a group the suer must be a member of in OpenUnison's virtual directory
+                          - `dynamicGroup` - The DN of an LDAP dynamic group the suer must be a member of in OpenUnison's virtual directory
+                          - `dn` - The DN of an area of the virtual directory where all users under that DN are authorized
+                          - `custom` - The name of a `CustomAuthorization`.  Can be followed by a `!` with parameters.  For instance `SomeCustomAZ!param1!param2` will call the custom authorization `SomeCustomAZ` with the parameters `param1` and `param2`
+                          - `filter` - An LDAP filter that will be applied to a logged in user
+                      constraint:
+                        type: string
+                        description: How to enforce this rule based on the `scope`
+  scope: Namespaced
+  names:
+    plural: portalurls
+    singular: portalurl
+    kind: PortalUrl
+    shortNames:
+      - portalurl
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: orgs.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              description: Used to organize resources in OpenUnison into a tree that can be leveraged for display and authorization purposes.
+              properties:
+                label:
+                  type: string
+                  description: What people will see in the OpenUnison portal
+                description:
+                  type: string
+                  description: Descriptive text
+                uuid:
+                  type: string
+                  description: A unique identifier used to associate resources with this `Organization`
+                parent:
+                  type: string
+                  description: The parent `Organization`'s uuid in the tree
+                showInPortal:
+                  type: boolean
+                  description: If true, shows this orgnaization on the portal screen in OpenUnison
+                showInRequestAccess:
+                  type: boolean
+                  description: If true, shows the `Orgianization` in the `Request Access` screen of OpenUnison
+                showInReports:
+                  type: boolean
+                  description: If true, show in the  `Reports` section in OpenUnison.
+                azRules:
+                  type: array
+                  description: "List of rules used to authorize access.  Authorization succeeds if **ANY** of these rules pass"
+                  items:
+                    type: object
+                    properties:
+                      scope:
+                        type: string
+                        enum:
+                          - group
+                          - dynamicGroup
+                          - dn
+                          - custom
+                          - filter
+                        description: |-
+                          One of:
+                          - `group` - The DN of a group the suer must be a member of in OpenUnison's virtual directory
+                          - `dynamicGroup` - The DN of an LDAP dynamic group the suer must be a member of in OpenUnison's virtual directory
+                          - `dn` - The DN of an area of the virtual directory where all users under that DN are authorized
+                          - `custom` - The name of a `CustomAuthorization`.  Can be followed by a `!` with parameters.  For instance `SomeCustomAZ!param1!param2` will call the custom authorization `SomeCustomAZ` with the parameters `param1` and `param2`
+                          - `filter` - An LDAP filter that will be applied to a logged in user
+                      constraint:
+                        type: string
+                        description: How to enforce this rule based on the `scope`
+  scope: Namespaced
+  names:
+    plural: orgs
+    singular: org
+    kind: Org
+    shortNames:
+      - orgs
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: targets.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              description: Represents a connection to an external resource that OpenUnison will manage users and objects in
+              properties:
+                className:
+                  type: string
+                  description: Implementation of `com.tremolosecurity.provisioning.core.UserStoreProvider`
+                params:
+                  type: array
+                  description: Set of configuration parameters
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: Configuration parameter name, may be listed multiple times
+                      value:
+                        type: string
+                        description: Value
+                secretParams:
+                  type: array
+                  items:
+                    type: object
+                    description: Load parameters directly from Kubernetes `Secret` objects
+                    properties:
+                      name:
+                        type: string
+                        description: The name of the configuration parameter
+                      secretName:
+                        type: string
+                        description: The name of the Kubernetes `Secret`
+                      secretKey:
+                        type: string
+                        description: The name of the key in the `Secret` to pull the data from
+                targetAttributes:
+                  type: array
+                  description: Attributes that are managed by this target
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: The name of the attribute in the target
+                      source:
+                        type: string
+                        description: |-
+                          Depends on `sourceType`:
+                           - `static` - The specific value of the attribute
+                           - `user` - The name of the attribute from the user to use
+                           - `custom` - Implementation of `com.tremolosecurity.provisioning.mapping.CustomMapping`, parameters can be supplied after a `|` that's comma delimited.  For instance, `com.tremolosecurity.mapping.JavaScriptMapping|k8s,openunison,argocd-groups` Uses the `JavaScriptMapping`, passing the parameters `k8s`, `openunison`, and `argocd-groups` as parameters
+                      sourceType:
+                        type: string
+                        description: Where the attribute data will come from
+                        enum:
+                          - static
+                          - user
+                          - custom
+                      targetType:
+                        type: string
+                        description: The data type for the target attribute
+                        enum:
+                          - string
+                          - int
+                          - long
+                          - date
+                          - timestamp
+  scope: Namespaced
+  names:
+    plural: targets
+    singular: target
+    kind: Target
+    shortNames:
+      - target
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: workflows.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: false
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: Holder for a workflow object
+          properties:
+            spec:
+              type: object
+              properties:
+                label:
+                  type: string
+                  description: Descriptive name
+                description:
+                  type: string
+                  description: Descriptive text
+                inList:
+                  type: boolean
+                  description: If true, includes this workflow as requestable on the `Request Access` screen
+                orgId:
+                  type: string
+                  description: The value of an `Organization.uuid` that contains this workflow
+                dynamicConfiguration:
+                  type: object
+                  description: Used to apply a workflow to several potential objects.  Will instanciate one instance of this workflow for each object.  For instance creating one instance of a workflow for each namespace in a cluster.
+                  properties:
+                    dynamic:
+                      type: boolean
+                      description: Determines if the workflow should be loaded based on a dynamic configuration
+                    className:
+                      type: string
+                      description: Implementation of `com.tremolosecurity.provisioning.util.DynamicWorkflow`
+                    params:
+                      type: array
+                      description: List of parameters to pass to the `DynamicWorkflow` implementation.
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                            description: Can be repeated
+                          value:
+                            type: string
+                tasks:
+                  type: string
+                  description: See https://openunison.github.io/UPDATEME
+    - name: v2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: Holder for a workflow object
+          properties:
+            spec:
+              type: object
+              properties:
+                label:
+                  type: string
+                  description: Descriptive name
+                description:
+                  type: string
+                  description: Descriptive text
+                inList:
+                  type: boolean
+                  description: If true, includes this workflow as requestable on the `Request Access` screen
+                orgId:
+                  type: string
+                  description: The value of an `Organization.uuid` that contains this workflow
+                dynamicConfiguration:
+                  type: object
+                  description: Used to apply a workflow to several potential objects.  Will instanciate one instance of this workflow for each object.  For instance creating one instance of a workflow for each namespace in a cluster.
+                  properties:
+                    dynamic:
+                      type: boolean
+                      description: Determines if the workflow should be loaded based on a dynamic configuration
+                    className:
+                      type: string
+                      description: Implementation of `com.tremolosecurity.provisioning.util.DynamicWorkflow`
+                    params:
+                      type: array
+                      description: List of parameters to pass to the `DynamicWorkflow` implementation.
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                            description: Can be repeated
+                          value:
+                            type: string
+                    filterAnnotations:
+                      type: array
+                      description: List of parameters to pass to the `DynamicWorkflow` implementation.
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                            description: name of the annotation filter
+                          requestObjectName:
+                            type: string
+                            description: name of the request object to get the annotation value from
+
+                tasks:
+                  type: string
+                  description: See https://openunison.github.io/UPDATEME
+  scope: Namespaced
+  names:
+    plural: workflows
+    singular: workflow
+    kind: Workflow
+    shortNames:
+      - workflow
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: reports.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              description: Holds a report generated by OpenUnison
+              properties:
+                name:
+                  type: string
+                  description: The name of the report
+                description:
+                  type: string
+                  description: Descriptive text for the report
+                groupBy:
+                  type: string
+                  description: Report field that data should be grouped by
+                groupings:
+                  type: boolean
+                  description: If true, the report is broken into sections based on the field identified by `groupBy`
+                orgId:
+                  type: string
+                  description: The `Orgnanization.id` that this report belongs in
+                parameters:
+                  type: object
+                  description: Determines which parameters should be included
+                  properties:
+                    beginDate:
+                      type: boolean
+                    endDate:
+                      type: boolean
+                    userKey:
+                      type: boolean
+                    currentUser:
+                      type: boolean
+                sql:
+                  description: The SQL used to generate the report.
+                  type: string
+                headerFields:
+                  type: array
+                  description: Data to be displayed as a header
+                  items:
+                    type: string
+                dataFields:
+                  type: array
+                  description: List of fields to show in the report
+                  items:
+                    type: string
+
+  scope: Namespaced
+  names:
+    plural: reports
+    singular: report
+    kind: Report
+    shortNames:
+      - report
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: oujobs.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              description: An OUJob is a scheduled job, similar to a Job in Kubernetes but is executed by OpenUnison's internal scheduler.
+              properties:
+                cronSchedule:
+                  type: object
+                  description: The cron configuration, using standard cron rules.
+                  properties:
+                    seconds:
+                      type: string
+                    minutes:
+                      type: string
+                    hours:
+                      type: string
+                    dayOfMonth:
+                      type: string
+                    month:
+                      type: string
+                    dayOfWeek:
+                      type: string
+                    year:
+                      type: string
+                className:
+                  description: Implementaiton of `com.tremolosecurity.provisioning.scheduler.UnisonJob`
+                  type: string
+                group:
+                  type: string
+                  description: A key to group jobs by, arbitrary
+                params:
+                  type: array
+                  description: List of configuration options.  individual options may be listed multiple times
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      value:
+                        type: string
+                secretParams:
+                  type: array
+                  description: Secret data that should be loaded directly from Kubernetes Secrets
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        description: The name of the configuration option for the job
+                        type: string
+                      secretName:
+                        description: The name of the `Secret` to get the value from
+                        type: string
+                      secretKey:
+                        description: The key in the `data` section of the `Secret` to get the data from
+                        type: string
+  scope: Namespaced
+  names:
+    plural: oujobs
+    singular: oujob
+    kind: OUJob
+    shortNames:
+      - oujob
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: messagelisteners.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: Reveives inbound messages for asynchronous processing
+          properties:
+            spec:
+              type: object
+              properties:
+                className:
+                  type: string
+                  description: Implementation of `com.tremolosecurity.provisioning.core.UnisonMessageListener`
+                params:
+                  type: array
+                  description: List of configuration options, each option can be listed multiple times
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      value:
+                        type: string
+                secretParams:
+                  type: array
+                  description: Secret data to be loaded directly from Kubernetes `Secret` objects
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: The configuration option to set
+                      secretName:
+                        type: string
+                        description: The `Secret` to pull data from
+                      secretKey:
+                        type: string
+                        description: The key in the `data` section of the `Secret` to pull the value from
+  scope: Namespaced
+  names:
+    plural: messagelisteners
+    singular: messagelistener
+    kind: MessageListener
+    shortNames:
+      - msglstnr
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: resultgroups.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: A group of actions to take as a result of an authentication or authorization event
+          properties:
+            spec:
+              type: array
+              description: List of results
+              items:
+                type: object
+                properties:
+                  resultType:
+                    description: |-
+                      A result of an authenticaiton or authorization event:
+                      - `header` - A request header injected into an HTTP request, result of an authoriztion event
+                      - `cookie` - A Cookie being added to the response, result of an authentication event
+                      - `redirect` - A 302 sent back to the client, can be the result of either
+                    type: string
+                    enum:
+                      - header
+                      - cookie
+                      - redirect
+                      - assertion
+                  source:
+                    type: string
+                    description: The source of the value of a result
+                    enum:
+                      - static
+                      - user
+                      - custom
+                  value:
+                    description: |-
+                      Depends on `source`:
+                      - `static` - The value to set
+                      - `user` - The name of the attribute from the logged in user to user
+                      - `custom` - Implementation of `com.tremolosecurity.proxy.results.CustomResult`
+                    type: string
+  scope: Namespaced
+  names:
+    plural: resultgroups
+    singular: resultgroup
+    kind: ResultGroup
+    shortNames:
+      - resgrp
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: customazs.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: A custom authorization is an implementation of `com.tremolosecurity.proxy.az.CustomAuthorization`
+          properties:
+            spec:
+              type: object
+              properties:
+                className:
+                  description: Implementation of `com.tremolosecurity.proxy.az.CustomAuthorization`
+                  type: string
+                params:
+                  description: List of configuration options.  Properties can have the value of a `string` or array of `string`
+                  type: object
+                  additionalProperties: true
+  scope: Namespaced
+  names:
+    plural: customazs
+    singular: customaz
+    kind: CustomAuthorization
+    shortNames:
+      - caz
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: authmechs.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: Defines a way to authenticate users
+          properties:
+            spec:
+              type: object
+              properties:
+                uri:
+                  type: string
+                  description: The path of a URL that triggers this method, **MUST** start with `/auth/`
+                className:
+                  type: string
+                  description: Implementation of `com.tremolosecurity.proxy.auth.AuthMechanism`
+                init:
+                  type: object
+                  description: Initialization parameters for when this mechanism is created.  These parameters are global for all chains.  Each parameter can have a value of a single `string` or an array of `string`
+                  additionalProperties: true
+                secretParams:
+                  description: Pull secret data directly from a Kubernetes `Secret`
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        description: The name of the configuration option
+                        type: string
+                      secretName:
+                        description: The name of the Kubernetes `Secret`
+                        type: string
+                      secretKey:
+                        description: The name of the key in the `data` section of the Kubernetes `Secret` to pull the value from
+                        type: string
+  scope: Namespaced
+  names:
+    plural: authmechs
+    singular: authmech
+    kind: AuthenticationMechanism
+    shortNames:
+      - authm
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: authchains.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: An authentication chain links together multiple mechanisms to authenticate a user
+          properties:
+            spec:
+              type: object
+              properties:
+                level:
+                  description: The strength of the chain.  If a user is already authenticated using a chain of equal or higher strength then authenticaiton is not re-run.
+                  type: integer
+                finishOnRequiredSucess:
+                  description: If `true`, fill short-circuit a chain that has mechanisms which aren't required once the required ones finish.  Generally left to `false`
+                  type: boolean
+                root:
+                  type: string
+                  description: Where in the OpenUnison virtual directory to pull users from.  Usually `o=Tremolo`
+                compliance:
+                  type: object
+                  description: Configures protection against brute-force attacks.  See https://openunison.github.io/UPDATE for detailed configuration instructions
+                  properties:
+                    enabled:
+                      type: boolean
+                    maxFailedAttempts:
+                      type: integer
+                    maxLockoutTime:
+                      type: integer
+                    numFailedAttribute:
+                      type: string
+                    lastFailedAttribute:
+                      type: string
+                    lastSucceedAttribute:
+                      type: string
+                    updateAttributesWorkflow:
+                      type: string
+                    uidAttributeName:
+                      type: string
+                authMechs:
+                  type: array
+                  description: List of mechanisms in this chain
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: The name of an `AuthenticationMechanism`
+                      required:
+                        type: string
+                        description: |-
+                          Determines if a mechanism satisfies a chain.  Mostly should be `required`
+                        enum:
+                          - sufficient
+                          - required
+                      params:
+                        type: object
+                        description: Configuration parameters.  Values can be a `string` or array of `string`
+                        additionalProperties: true
+                      secretParams:
+                        description: Configuraiton options that come directly from Kubernetes `Secret` objects
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              description: The name of the configuration option
+                              type: string
+                            secretName:
+                              description: The Kubernetes `Secret` to pull the value from
+                              type: string
+                            secretKey:
+                              description: The name of the key in the `data` section of the source `Secret`
+                              type: string
+  scope: Namespaced
+  names:
+    plural: authchains
+    singular: authchain
+    kind: AuthenticationChain
+    shortNames:
+      - authc
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: applications.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v2
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: Contains the configuration for a web application, identity provider, or API
+          properties:
+            spec:
+              type: object
+              properties:
+                azTimeoutMillis:
+                  type: integer
+                  description: Number of milliseconds authorization decisions should be cached for
+                isApp:
+                  type: boolean
+                  description: If true, the application is assumed to be a reverse proxy or local API.  If false, the application is an identity provider
+                urls:
+                  type: array
+                  description: List of URLs that make up an application
+                  items:
+                    type: object
+                    properties:
+                      hosts:
+                        type: array
+                        description: List of host names that this URL is valid for.  May be `*` for all hosts
+                        items:
+                          type: string
+                      filterChain:
+                        type: array
+                        description: List of filters that can manipulate request and response headers
+                        items:
+                          type: object
+                          properties:
+                            className:
+                              type: string
+                              description: Implementation of `com.tremolosecurity.proxy.filter.HttpFilter`
+                            params:
+                              type: object
+                              description: List of configuration parameters.  Parameters may be a `string` or an `array` of `string`
+                              additionalProperties: true
+                            secretParams:
+                              type: array
+                              description: Load parameters directly from Kubernetes `Secret` objects
+                              items:
+                                type: object
+                                properties:
+                                  name:
+                                    type: string
+                                    description: The name of the filter parameter
+                                  secretName:
+                                    type: string
+                                    description: The name of the Kubernetes `Secret`
+                                  secretKey:
+                                    type: string
+                                    description: The name of the key in the `data` section of the `Secret`
+                      proxyTo:
+                        type: string
+                        description: "**Optional** If isApp is true, determines the URL to forward the request to.  typically uses the form `https://host:port${fullURI}` where `${fullURI}` is replaced with the path section of the requested URL"
+                      proxyConfiguration:
+                        type: object
+                        description: Provides timeout configurations for proxying to the `proxyTo` URL.  If omited, there are no timeouts
+                        properties:
+                          connectionTimeoutMillis:
+                            type: integer
+                            description: The number of milliseconds an attempted connection will wait until timing out.  Defaults to `0`, which is no timeout
+                          requestTimeoutMillis:
+                            type: integer
+                            description: The number of milliseconds in an individual request will wait until timing out.  Defaults to `0`, which is no timeout
+                          socketTimeoutMillis:
+                            type: integer
+                            description: The number of milliseconds a socket can remain open without receiving any data.  Defaults to `0`, which is no timeout
+
+                      uri:
+                        type: string
+                        description: The path of the URL, the portian after the host that this URL will match on
+                      regex:
+                        type: boolean
+                        description: if true, the `uri` is interpreted as a regular expression
+                      authChain:
+                        type: string
+                        description: The name of an `AuthenticationChain` that will be used to authenticate access to this URL
+                      overrideHost:
+                        type: boolean
+                        description: If true, the the proxied request will include the original request's `HOST` header
+                      overrideReferer:
+                        type: boolean
+                        description: If true, and referals' hosts are overriden with the orginal request's `HOST` header
+                      results:
+                        type: object
+                        description: Actions that will triger as the result to an authentication or authorization event
+                        properties:
+                          auSuccess:
+                            type: string
+                            description: The name of a `ResultGroup` that will be executed when a user successfully authenticates to this URL
+                          auFail:
+                            type: string
+                            description: The name of a `ResultGroup` that will be executed when a user fails to authenticate to this URL
+                          azSuccess:
+                            type: string
+                            description: The name of a `ResultGroup` that will be executed when a user is successfully authorized for this URL
+                          azFail:
+                            type: string
+                            description: The name of a `ResultGroup` that will be executed when a user is failed to be authorized for this URL
+                      azRules:
+                        type: array
+                        description: "List of rules used to authorize access.  Authorization succeeds if **ANY** of these rules pass"
+                        items:
+                          type: object
+                          properties:
+                            scope:
+                              type: string
+                              enum:
+                                - group
+                                - dynamicGroup
+                                - dn
+                                - custom
+                                - filter
+                              description: |-
+                                One of:
+                                - `group` - The DN of a group the suer must be a member of in OpenUnison's virtual directory
+                                - `dynamicGroup` - The DN of an LDAP dynamic group the suer must be a member of in OpenUnison's virtual directory
+                                - `dn` - The DN of an area of the virtual directory where all users under that DN are authorized
+                                - `custom` - The name of a `CustomAuthorization`.  Can be followed by a `!` with parameters.  For instance `SomeCustomAZ!param1!param2` will call the custom authorization `SomeCustomAZ` with the parameters `param1` and `param2`
+                                - `filter` - An LDAP filter that will be applied to a logged in user
+                            constraint:
+                              type: string
+                              description: How to enforce this rule based on the `scope`
+                      idp:
+                        type: object
+                        description: Configuration for an `Application` that acts as an identity provider
+                        properties:
+                          className:
+                            type: string
+                            description: Implementation of `com.tremolosecurity.idp.server.IdentityProvider`
+                          params:
+                            type: object
+                            description: properties to be passed to the identity provider.  Values can be either a `string` or an array of `string`
+                            additionalProperties: true
+                          secretParams:
+                            type: array
+                            description: Load parameters directly from Kubernetes `Secret` objects
+                            items:
+                              type: object
+                              properties:
+                                name:
+                                  type: string
+                                  description: The name of the identity provider parameter
+                                secretName:
+                                  type: string
+                                  description: The name of the Kubernetes `Secret`
+                                secretKey:
+                                  type: string
+                                  description: The name of the key in the `data` section of the `Secret`
+                          mappings:
+                            type: object
+                            description: Provides mappings from a user's attributes into an identity provider's assertions
+                            properties:
+                              strict:
+                                type: boolean
+                                description: If true, only mapped attributes will be included in the assertion.  If false, all attributes and mapped attributes are included.
+                              map:
+                                type: array
+                                description: list of mappings
+                                items:
+                                  type: object
+                                  properties:
+                                    targetAttributeName:
+                                      type: string
+                                      description: The name of the attribute as it will appear in the assertion
+                                    targetAttributeSource:
+                                      type: string
+                                      description: |-
+                                        Depends on `sourceType`:
+                                        - `static` - The specific value of the attribute
+                                        - `user` - The name of the attribute from the user to use
+                                        - `composite` - Assemble an attribute from the first values of other attributes and static content.  For instance `${givenName} ${sn}` where `givenName` is `First` and `sn` is `Last` will create the value `First Last`
+                                        - `custom` - Implementation of `com.tremolosecurity.provisioning.mapping.CustomMapping`, parameters can be supplied after a `|` that's comma delimited.  For instance, `com.tremolosecurity.mapping.JavaScriptMapping|k8s,openunison,argocd-groups` Uses the `JavaScriptMapping`, passing the parameters `k8s`, `openunison`, and `argocd-groups` as parameters
+                                    sourceType:
+                                      type: string
+                                      enum:
+                                        - static
+                                        - user
+                                        - custom
+                                        - composite
+                          trusts:
+                            type: array
+                            description: List of trusted clients
+                            items:
+                              type: object
+                              properties:
+                                name:
+                                  type: string
+                                  description: The name of the trust
+                                params:
+                                  description: The parameters to pass the to trust configuration.  Values may be a `string` or an array of `string`
+                                  type: object
+                                  additionalProperties: true
+                                secretParams:
+                                  type: array
+                                  description: Load parameters directly from Kubernetes `Secret` objects
+                                  items:
+                                    type: object
+                                    properties:
+                                      name:
+                                        type: string
+                                        description: The name of the trust parameter
+                                      secretName:
+                                        type: string
+                                        description: The name of the Kubernetes `Secret`
+                                      secretKey:
+                                        type: string
+                                        description: The name of the key in the `data` section of the `Secret`
+                cookieConfig:
+                  type: object
+                  description: Determines how an `Application` manages its session via cookies
+                  properties:
+                    sessionCookieName:
+                      type: string
+                      description: Name of the cookie
+                    domain:
+                      type: string
+                      description: The domain the cookie applies to.  Can be `*` to apply to any domain the URLs of the application accept
+                    scope:
+                      type: integer
+                      description: ignore
+                    logoutURI:
+                      type: string
+                      description: The URI, or path in the URL, that triggers the ending of the session
+                    keyAlias:
+                      type: string
+                      description: The name of the key in OpenUnison's keystore used to encrypt the session cookie
+                    timeout:
+                      type: integer
+                      description: The time, in seconds, that an idle session should be discarded
+                    secure:
+                      type: boolean
+                      description: If true, cookies require an HTTPS connection
+                    httpOnly:
+                      type: boolean
+                      description: If true, cookies are not accessible from javascript
+                    sameSite:
+                      type: string
+                      description: Used to set the `SameSite` option in a cookie.  One of `None`, `Lax`, `Strict`, `Ignore`
+                      enum:
+                        - None
+                        - Lax
+                        - Strict
+                        - Ignore
+                    cookiesEnabled:
+                      type: boolean
+                      description: If true, sessions are enabled.  If false (such as for an API), no session is generated or tracked
+    - name: v1
+      served: true
+      storage: false
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: Contains the configuration for a web application, identity provider, or API
+          properties:
+            spec:
+              type: object
+              properties:
+                azTimeoutMillis:
+                  type: integer
+                  description: Number of milliseconds authorization decisions should be cached for
+                isApp:
+                  type: boolean
+                  description: If true, the application is assumed to be a reverse proxy or local API.  If false, the application is an identity provider
+                urls:
+                  type: array
+                  description: List of URLs that make up an application
+                  items:
+                    type: object
+                    properties:
+                      hosts:
+                        type: array
+                        description: List of host names that this URL is valid for.  May be `*` for all hosts
+                        items:
+                          type: string
+                      filterChain:
+                        type: array
+                        description: List of filters that can manipulate request and response headers
+                        items:
+                          type: object
+                          properties:
+                            className:
+                              type: string
+                              description: Implementation of `com.tremolosecurity.proxy.filter.HttpFilter`
+                            params:
+                              type: object
+                              description: List of configuration parameters.  Parameters may be a `string` or an `array` of `string`
+                              additionalProperties: true
+                            secretParams:
+                              type: array
+                              description: Load parameters directly from Kubernetes `Secret` objects
+                              items:
+                                type: object
+                                properties:
+                                  name:
+                                    type: string
+                                    description: The name of the filter parameter
+                                  secretName:
+                                    type: string
+                                    description: The name of the Kubernetes `Secret`
+                                  secretKey:
+                                    type: string
+                                    description: The name of the key in the `data` section of the `Secret`
+                      proxyTo:
+                        type: string
+                        description: "**Optional** If isApp is true, determines the URL to forward the request to.  typically uses the form `https://host:port${fullURI}` where `${fullURI}` is replaced with the path section of the requested URL"
+                      uri:
+                        type: string
+                        description: The path of the URL, the portian after the host that this URL will match on
+                      regex:
+                        type: boolean
+                        description: if true, the `uri` is interpreted as a regular expression
+                      authChain:
+                        type: string
+                        description: The name of an `AuthenticationChain` that will be used to authenticate access to this URL
+                      overrideHost:
+                        type: boolean
+                        description: If true, the the proxied request will include the original request's `HOST` header
+                      overrideReferer:
+                        type: boolean
+                        description: If true, and referals' hosts are overriden with the orginal request's `HOST` header
+                      results:
+                        type: object
+                        description: Actions that will triger as the result to an authentication or authorization event
+                        properties:
+                          auSuccess:
+                            type: string
+                            description: The name of a `ResultGroup` that will be executed when a user successfully authenticates to this URL
+                          auFail:
+                            type: string
+                            description: The name of a `ResultGroup` that will be executed when a user fails to authenticate to this URL
+                          azSuccess:
+                            type: string
+                            description: The name of a `ResultGroup` that will be executed when a user is successfully authorized for this URL
+                          azFail:
+                            type: string
+                            description: The name of a `ResultGroup` that will be executed when a user is failed to be authorized for this URL
+                      azRules:
+                        type: array
+                        description: "List of rules used to authorize access.  Authorization succeeds if **ANY** of these rules pass"
+                        items:
+                          type: object
+                          properties:
+                            scope:
+                              type: string
+                              enum:
+                                - group
+                                - dynamicGroup
+                                - dn
+                                - custom
+                                - filter
+                              description: |-
+                                One of:
+                                - `group` - The DN of a group the suer must be a member of in OpenUnison's virtual directory
+                                - `dynamicGroup` - The DN of an LDAP dynamic group the suer must be a member of in OpenUnison's virtual directory
+                                - `dn` - The DN of an area of the virtual directory where all users under that DN are authorized
+                                - `custom` - The name of a `CustomAuthorization`.  Can be followed by a `!` with parameters.  For instance `SomeCustomAZ!param1!param2` will call the custom authorization `SomeCustomAZ` with the parameters `param1` and `param2`
+                                - `filter` - An LDAP filter that will be applied to a logged in user
+                            constraint:
+                              type: string
+                              description: How to enforce this rule based on the `scope`
+                      idp:
+                        type: object
+                        description: Configuration for an `Application` that acts as an identity provider
+                        properties:
+                          className:
+                            type: string
+                            description: Implementation of `com.tremolosecurity.idp.server.IdentityProvider`
+                          params:
+                            type: object
+                            description: properties to be passed to the identity provider.  Values can be either a `string` or an array of `string`
+                            additionalProperties: true
+                          secretParams:
+                            type: array
+                            description: Load parameters directly from Kubernetes `Secret` objects
+                            items:
+                              type: object
+                              properties:
+                                name:
+                                  type: string
+                                  description: The name of the identity provider parameter
+                                secretName:
+                                  type: string
+                                  description: The name of the Kubernetes `Secret`
+                                secretKey:
+                                  type: string
+                                  description: The name of the key in the `data` section of the `Secret`
+                          mappings:
+                            type: object
+                            description: Provides mappings from a user's attributes into an identity provider's assertions
+                            properties:
+                              strict:
+                                type: boolean
+                                description: If true, only mapped attributes will be included in the assertion.  If false, all attributes and mapped attributes are included.
+                              map:
+                                type: array
+                                description: list of mappings
+                                items:
+                                  type: object
+                                  properties:
+                                    targetAttributeName:
+                                      type: string
+                                      description: The name of the attribute as it will appear in the assertion
+                                    targetAttributeSource:
+                                      type: string
+                                      description: |-
+                                        Depends on `sourceType`:
+                                        - `static` - The specific value of the attribute
+                                        - `user` - The name of the attribute from the user to use
+                                        - `composite` - Assemble an attribute from the first values of other attributes and static content.  For instance `${givenName} ${sn}` where `givenName` is `First` and `sn` is `Last` will create the value `First Last`
+                                        - `custom` - Implementation of `com.tremolosecurity.provisioning.mapping.CustomMapping`, parameters can be supplied after a `|` that's comma delimited.  For instance, `com.tremolosecurity.mapping.JavaScriptMapping|k8s,openunison,argocd-groups` Uses the `JavaScriptMapping`, passing the parameters `k8s`, `openunison`, and `argocd-groups` as parameters
+                                    sourceType:
+                                      type: string
+                                      enum:
+                                        - static
+                                        - user
+                                        - custom
+                                        - composite
+                          trusts:
+                            type: array
+                            description: List of trusted clients
+                            items:
+                              type: object
+                              properties:
+                                name:
+                                  type: string
+                                  description: The name of the trust
+                                params:
+                                  description: The parameters to pass the to trust configuration.  Values may be a `string` or an array of `string`
+                                  type: object
+                                  additionalProperties: true
+                                secretParams:
+                                  type: array
+                                  description: Load parameters directly from Kubernetes `Secret` objects
+                                  items:
+                                    type: object
+                                    properties:
+                                      name:
+                                        type: string
+                                        description: The name of the trust parameter
+                                      secretName:
+                                        type: string
+                                        description: The name of the Kubernetes `Secret`
+                                      secretKey:
+                                        type: string
+                                        description: The name of the key in the `data` section of the `Secret`
+                cookieConfig:
+                  type: object
+                  description: Determines how an `Application` manages its session via cookies
+                  properties:
+                    sessionCookieName:
+                      type: string
+                      description: Name of the cookie
+                    domain:
+                      type: string
+                      description: The domain the cookie applies to.  Can be `*` to apply to any domain the URLs of the application accept
+                    scope:
+                      type: integer
+                      description: ignore
+                    logoutURI:
+                      type: string
+                      description: The URI, or path in the URL, that triggers the ending of the session
+                    keyAlias:
+                      type: string
+                      description: The name of the key in OpenUnison's keystore used to encrypt the session cookie
+                    timeout:
+                      type: integer
+                      description: The time, in seconds, that an idle session should be discarded
+                    secure:
+                      type: boolean
+                      description: If true, cookies require an HTTPS connection
+                    httpOnly:
+                      type: boolean
+                      description: If true, cookies are not accessible from javascript
+                    sameSite:
+                      type: string
+                      description: Used to set the `SameSite` option in a cookie.  One of `None`, `Lax`, `Strict`, `Ignore`
+                      enum:
+                        - None
+                        - Lax
+                        - Strict
+                        - Ignore
+                    cookiesEnabled:
+                      type: boolean
+                      description: If true, sessions are enabled.  If false (such as for an API), no session is generated or tracked
+  scope: Namespaced
+  names:
+    plural: applications
+    singular: application
+    kind: Application
+    shortNames:
+      - app
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: groupmetadatas.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: Stores mapping from an external group to an internal group.  Can also be used to create a group in the database without executing SQL
+          properties:
+            spec:
+              type: object
+              properties:
+                groupName:
+                  type: string
+                  description: The name of the group to create
+                externalName:
+                  type: string
+                  description: "**Optional** - the name of the external group to map to"
+  scope: Namespaced
+  names:
+    plural: groupmetadatas
+    singular: groupmetadata
+    kind: GroupMetaData
+    shortNames:
+      - gmd
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: namespacegroupmetadatas.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: Stores mapping from an external group to an internal group for the roles of a namespace.  Can also be used to create a group in the database without executing SQL
+          properties:
+            spec:
+              type: object
+              properties:
+                namespace:
+                  type: string
+                  description: the name of the namespace for this mapping
+                cluster:
+                  type: string
+                  description: the name of the cluster holding the namespace
+                mappings:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      groupName:
+                        type: string
+                        description: The name of the group to create
+                      externalName:
+                        type: string
+                        description: "**Optional** - the name of the external group to map to"
+                      roleName:
+                        type: string
+                        description: "**Optional** - describes the role for this mapping"
+  scope: Namespaced
+  names:
+    plural: namespacegroupmetadatas
+    singular: namespacegroupmetadata
+    kind: NamespaceGroupMetaData
+    shortNames:
+      - nsgmd
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: javascriptmappings.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: Stores the javascript for a custom mapping
+          properties:
+            spec:
+              type: object
+              properties:
+                javascript:
+                  type: string
+                  description: "JavaScript function for the mapping.  Must contain at least one funciton named `doMapping` with two arguments: `user` and `attributeName`"
+  scope: Namespaced
+  names:
+    plural: javascriptmappings
+    singular: javascriptmapping
+    kind: JavaScriptMapping
+    shortNames:
+      - jsm
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: waitforstates.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: Stores the state of a workflow waiting for an object to reach a certain status
+          properties:
+            spec:
+              type: object
+              properties:
+                state:
+                  type: string
+                  description: The encrypted state of the workflow waiting for the expected status before continuing
+  scope: Namespaced
+  names:
+    plural: waitforstates
+    singular: waitforstate
+    kind: WaitForState
+    shortNames:
+      - wfs
+---
+# Source: openunison-operator/templates/crds/openunison-crd.yaml
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: notifiers.openunison.tremolo.io
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: crd
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  group: openunison.tremolo.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: Configures a custom notification mechanism for OpenUnison
+          properties:
+            spec:
+              type: object
+              description: Represents a notification system
+              properties:
+                className:
+                  type: string
+                  description: Implementation of `com.tremolosecurity.openunison.notifications.NotificationSystem`
+                params:
+                  type: array
+                  description: Set of configuration parameters
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: Configuration parameter name, may be listed multiple times
+                      value:
+                        type: string
+                        description: Value
+                secretParams:
+                  type: array
+                  items:
+                    type: object
+                    description: Load parameters directly from Kubernetes `Secret` objects
+                    properties:
+                      name:
+                        type: string
+                        description: The name of the configuration parameter
+                      secretName:
+                        type: string
+                        description: The name of the Kubernetes `Secret`
+                      secretKey:
+                        type: string
+                        description: The name of the key in the `Secret` to pull the data from
+  scope: Namespaced
+  names:
+    plural: notifiers
+    singular: notifier
+    kind: Notifier
+    shortNames:
+      - ntfr
+---
+# Source: openunison-operator/templates/roles/openunison-operator-role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: openunison-operator-role
+  namespace: openunison
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+rules:
+  - apiGroups:
+      - openunison.tremolo.io
+      - ""
+      - apps
+      - rbac.authorization.k8s.io
+      - extensions
+      - apps.openshift.io
+      - build.openshift.io
+      - image.openshift.io
+      - route.openshift.io
+      - user.openshift.io
+      - networking.k8s.io
+      - batch
+      - networking.k8s.io
+    resources:
+      - routes/custom-host
+      - imagestreamimports
+      - users
+      - groups
+      - routes
+      - images
+      - imagestreams
+      - builds
+      - buildconfigs
+      - deploymentconfigs
+      - openunisons
+      - openunisons/status
+      - pods
+      - deployments
+      - secrets
+      - configmaps
+      - services
+      - serviceaccounts
+      - roles
+      - rolebindings
+      - ingresses
+      - cronjobs
+    verbs:
+      - "*"
+---
+# Source: openunison-operator/templates/rolebindings/openunison-operator-rolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: openunison-operator-rolebinding
+  namespace: openunison
+  labels:
+    app.kubernetes.io/name: openunison
+    app.kubernetes.io/instance: openunison-openunison
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: openunison-operator-role
+subjects:
+  - kind: ServiceAccount
+    name: openunison-operator
+    namespace: openunison
+---
+# Source: openunison-operator/templates/deployments/openunison-operator.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: openunison-operator
+    app.kubernetes.io/name: openunison-operator
+    app.kubernetes.io/instance: openunison-operator-openunison
+    app.kubernetes.io/version: ""
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: openunison
+  name: openunison-operator
+  namespace: openunison
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: openunison-operator
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: openunison-operator
+        app.kubernetes.io/name: openunison-operator
+        app.kubernetes.io/instance: openunison-operator-openunison
+        app.kubernetes.io/version: ""
+        app.kubernetes.io/component: operator
+        app.kubernetes.io/part-of: openunison
+    spec:
+      containers:
+        - env:
+            - name: CA_CERTS_PATH
+              value: /usr/lib/jvm/java-17-openjdk-amd64/lib/security/cacerts
+            - name: JAVA_OPTS
+              value: -Djava.awt.headless=true -Djava.security.egd=file:/dev/./urandom -Dsun.net.inetaddr.ttl=0 -Djava.security.krb5.conf=/etc/krb5-local/krb5.conf -Djava.security.krb5.debug=true
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+
+          image: ghcr.io/openunison/openunison-kubernetes-operator:1.0.7
+          command:
+            - java
+
+            - -jar
+            - /usr/local/ouoperator/ouoperator.jar
+            - operator
+            - https://kubernetes.default.svc
+            - openunison
+            - /var/run/secrets/kubernetes.io/serviceaccount/token
+            - /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            - "2,3,4,5,6"
+            - "/"
+          imagePullPolicy: Always
+          name: openunison-operator
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - "ALL"
+            readOnlyRootFilesystem: true
+
+            seccompProfile:
+              type: RuntimeDefault
+            runAsNonRoot: true
+            runAsUser: 431
+            runAsGroup: 433
+
+          volumeMounts:
+            - mountPath: /etc/extraMaps
+              name: extra-maps
+              readOnly: true
+
+          resources:
+            requests:
+              memory: "200Mi"
+
+              cpu: "0.3"
+
+            limits:
+              memory: "200Mi"
+
+              cpu: "1"
+
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      serviceAccount: openunison-operator
+
+      securityContext:
+        fsGroup: 433
+        supplementalGroups: [433]
+        seccompProfile:
+          type: RuntimeDefault
+        runAsNonRoot: true
+        runAsUser: 431
+        runAsGroup: 433
+
+      volumes:
+        - name: extra-maps
+          emptyDir: {}
+
+      nodeSelector: {}

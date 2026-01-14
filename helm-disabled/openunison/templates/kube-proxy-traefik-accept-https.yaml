@@ -1,0 +1,37 @@
+apiVersion: traefik.io/v1alpha1
+kind: ServersTransport
+metadata:
+  name: ou-kube-oidc-transport-skip-verify
+  namespace: openunison
+spec:
+  insecureSkipVerify: true
+  serverName: k8sapi.homelab.lan
+---
+apiVersion: traefik.io/v1alpha1
+kind: ServersTransport
+metadata:
+  name: ou-kube-oidc-transport
+  namespace: openunison
+spec:
+  serverName: k8sapi.homelab.lan
+  rootCAsSecrets:
+    - ou-tls-certificate
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: k8sapi-oidc
+  namespace: openunison
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`k8sapi.homelab.lan`) && PathPrefix(`/`)
+      kind: Rule
+      services:
+        - name: kube-oidc-proxy-orchestra
+          port: 443
+          scheme: https
+          serversTransport: ou-kube-oidc-transport-skip-verify
+  tls:
+    secretName: ou-tls-certificate

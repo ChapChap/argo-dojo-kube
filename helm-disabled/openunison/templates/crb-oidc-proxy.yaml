@@ -1,0 +1,35 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kube-oidc-proxy
+rules:
+  # Le proxy doit pouvoir valider les tokens
+  - apiGroups: ["authentication.k8s.io"]
+    resources: ["tokenreviews"]
+    verbs: ["create"]
+
+  # Très fréquent : délégation d'authz (selon impl)
+  - apiGroups: ["authorization.k8s.io"]
+    resources: ["subjectaccessreviews"]
+    verbs: ["create"]
+
+  # Impersonation vers l'API server
+  - apiGroups: [""]
+    resources: ["users","groups","serviceaccounts"]
+    verbs: ["impersonate"]
+  - apiGroups: ["authentication.k8s.io"]
+    resources: ["userextras/*"]
+    verbs: ["impersonate"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kube-oidc-proxy
+subjects:
+  - kind: ServiceAccount
+    name: openunison-orchestra
+    namespace: openunison
+roleRef:
+  kind: ClusterRole
+  name: kube-oidc-proxy
+  apiGroup: rbac.authorization.k8s.io
