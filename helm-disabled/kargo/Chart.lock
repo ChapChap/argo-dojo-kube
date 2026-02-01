@@ -1,9 +1,9 @@
 dependencies:
 - name: kargo
   repository: oci://ghcr.io/akuity/kargo-charts
-  version: 1.2.0
+  version: 1.9.1
 - name: argo-rollouts
   repository: https://argoproj.github.io/argo-helm
   version: 2.37.7
-digest: sha256:3921b10d890f3ebff547b70c582359608750371691f7dfb16ad3d3f0db1790c7
-generated: "2025-12-01T17:02:42.835711+01:00"
+digest: sha256:3e67ae8ac7c00df5eade25ef0d2074f57b7622836e1938d30c1a132fbaa1440c
+generated: "2026-02-01T00:02:15.137249344Z"
