@@ -4,7 +4,7 @@ version: 1.2.0
 description: Kargo - GitOps promotion and lifecycle management for Kubernetes (POC deployment)
 dependencies:
 - name: kargo
-  version: "1.2.0"
+  version: "1.9.3"
   repository: oci://ghcr.io/akuity/kargo-charts
 - name: argo-rollouts
   version: "2.37.7"
